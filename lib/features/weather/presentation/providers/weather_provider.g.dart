@@ -443,7 +443,7 @@ class _ForecastProviderElement
   String get cityName => (origin as ForecastProvider).cityName;
 }
 
-String _$selectedCityHash() => r'e83c432121e506cdeb329acd93d4d279376f8455';
+String _$selectedCityHash() => r'cfbcd2ced2d3627078f39bbaeaabfd6ccaac6fb2';
 
 /// See also [SelectedCity].
 @ProviderFor(SelectedCity)

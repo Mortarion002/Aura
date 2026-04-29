@@ -167,7 +167,7 @@ class _CitySearchProviderElement
   String get query => (origin as CitySearchProvider).query;
 }
 
-String _$savedCitiesHash() => r'5ebd79d56f4a5b4fd13466e0a89119370c781dda';
+String _$savedCitiesHash() => r'bbde6aea7acd08e8f5325f085d075f36f5cb6c2e';
 
 /// See also [SavedCities].
 @ProviderFor(SavedCities)

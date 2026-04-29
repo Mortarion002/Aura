@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'core/theme/colors.dart';
 import 'core/widgets/bottom_nav_bar.dart';
 import 'core/widgets/orange_border_scaffold.dart';
+import 'features/clock/presentation/clock_screen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -23,7 +24,7 @@ class _AppShellState extends State<AppShell> {
             child: IndexedStack(
               index: _currentIndex,
               children: [
-                _buildStub('Clock Screen'),
+                const ClockScreen(),
                 _buildStub('Weather Screen'),
                 _buildStub('Settings Screen'),
               ],
