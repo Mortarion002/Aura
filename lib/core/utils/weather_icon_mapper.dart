@@ -34,18 +34,18 @@ class WeatherIconMapper {
   }
 
   static Color colorFor(int conditionId) {
-    if (conditionId == 800 || conditionId == 801) return TemporaColors.amber;
-    if (conditionId >= 200 && conditionId < 600) return TemporaColors.cyan;
-    if (conditionId >= 600 && conditionId < 700) return Colors.white70;
-    return TemporaColors.onSurfaceVariant;
+    if (conditionId == 800 || conditionId == 801) return kOrange;
+    if (conditionId >= 200 && conditionId < 600) return kTextPrimary;
+    if (conditionId >= 600 && conditionId < 700) return kTextSecond;
+    return kTextSecond;
   }
 
   // Glow shadow colour for the icon drop-shadow effect
   static Color glowFor(int conditionId) {
-    if (conditionId == 800 || conditionId == 801) return TemporaColors.amberGlow;
-    if (conditionId >= 200 && conditionId < 600) return TemporaColors.cyanGlow;
-    if (conditionId >= 600 && conditionId < 700) return const Color(0x4DB8D4F0); // snow: ice blue
-    if (conditionId >= 700 && conditionId < 800) return const Color(0x4D8898A8); // fog/mist: grey-blue
-    return const Color(0x4D4A6A8A); // clouds: steel blue
+    if (conditionId == 800 || conditionId == 801) return kOrange.withOpacity(0.3);
+    if (conditionId >= 200 && conditionId < 600) return kTextPrimary.withOpacity(0.3);
+    if (conditionId >= 600 && conditionId < 700) return kTextSecond.withOpacity(0.3); // snow: ice blue
+    if (conditionId >= 700 && conditionId < 800) return kTextSecond.withOpacity(0.3); // fog/mist: grey-blue
+    return kTextSecond.withOpacity(0.3); // clouds: steel blue
   }
 }

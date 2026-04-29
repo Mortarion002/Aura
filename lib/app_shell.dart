@@ -3,6 +3,8 @@ import 'core/theme/colors.dart';
 import 'core/widgets/bottom_nav_bar.dart';
 import 'core/widgets/orange_border_scaffold.dart';
 import 'features/clock/presentation/clock_screen.dart';
+import 'features/weather/presentation/weather_screen.dart';
+import 'features/settings/presentation/settings_screen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -25,8 +27,8 @@ class _AppShellState extends State<AppShell> {
               index: _currentIndex,
               children: [
                 const ClockScreen(),
-                _buildStub('Weather Screen'),
-                _buildStub('Settings Screen'),
+                const WeatherScreen(),
+                const SettingsScreen(),
               ],
             ),
           ),
@@ -48,18 +50,4 @@ class _AppShellState extends State<AppShell> {
         ],
       ),
     );
-  }
-
-  Widget _buildStub(String title) {
-    return Center(
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: kTextPrimary,
-          fontSize: 24,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
 }

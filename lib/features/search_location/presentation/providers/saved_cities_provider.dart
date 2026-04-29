@@ -36,6 +36,17 @@ class SavedCities extends _$SavedCities {
     ref.read(sharedPreferencesProvider).setStringList(_savedCitiesKey, next);
     state = next;
   }
+
+  void reorder(int oldIndex, int newIndex) {
+    final list = List<String>.from(state);
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex, item);
+    ref.read(sharedPreferencesProvider).setStringList(_savedCitiesKey, list);
+    state = list;
+  }
 }
 
 // ─── City search (geocoding API) ──────────────────────────────────────────────
