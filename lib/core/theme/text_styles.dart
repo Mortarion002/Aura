@@ -3,26 +3,29 @@ import 'package:google_fonts/google_fonts.dart';
 import 'colors.dart';
 
 class AppTextStyles {
-  // Display — Barlow Condensed ExtraBold
-  static TextStyle get displayHours => GoogleFonts.barlowCondensed(
-        fontSize: 160,
-        fontWeight: FontWeight.w800,
-        color: kBlack.withOpacity(0.15),
-        height: 1.0,
-      );
-
-  static TextStyle get displayMinutes => GoogleFonts.barlowCondensed(
-        fontSize: 160,
-        fontWeight: FontWeight.w800,
-        color: kBlack.withOpacity(0.45),
-        height: 1.0,
-      );
-
-  static TextStyle get displaySeconds => GoogleFonts.barlowCondensed(
-        fontSize: 160,
-        fontWeight: FontWeight.w800,
+  // Display — Clean Sans-serif
+  static TextStyle get displayHours => GoogleFonts.manrope(
+        fontSize: 180,
+        fontWeight: FontWeight.w600,
         color: kBlack,
-        height: 1.0,
+        height: 0.9,
+        letterSpacing: -6,
+      );
+
+  static TextStyle get displayMinutes => GoogleFonts.manrope(
+        fontSize: 180,
+        fontWeight: FontWeight.w600,
+        color: kBlack,
+        height: 0.9,
+        letterSpacing: -6,
+      );
+
+  static TextStyle get displaySeconds => GoogleFonts.manrope(
+        fontSize: 180,
+        fontWeight: FontWeight.w600,
+        color: kBlack,
+        height: 0.9,
+        letterSpacing: -6,
       );
 
   static TextStyle get displayUnit => GoogleFonts.dmSans(

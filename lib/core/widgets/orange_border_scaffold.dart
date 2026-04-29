@@ -18,12 +18,7 @@ class OrangeBorderScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: kOrange, width: 5.0),
-          ),
           child: body,
-        ),
       ),
       bottomNavigationBar: bottomNavigationBar,
     );
