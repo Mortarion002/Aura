@@ -103,6 +103,7 @@ class _WorldClockScreenState extends ConsumerState<WorldClockScreen> {
                       onAdd: (city) {
                         ref.read(savedCitiesProvider.notifier).addCity(city);
                         _queryCtrl.clear();
+                        _searching = false;
                         setState(() {});
                       },
                     ),
@@ -136,8 +137,9 @@ class _WorldClockScreenState extends ConsumerState<WorldClockScreen> {
                         .read(savedCitiesProvider.notifier)
                         .removeCity(entry.key);
                     if (entry.key == activeCity && savedCities.length > 1) {
-                      final next =
-                          savedCities.firstWhere((c) => c != entry.key);
+                      final next = savedCities.firstWhere(
+                        (c) => c != entry.key,
+                      );
                       ref.read(activeCityProvider.notifier).setCity(next);
                     }
                   },
@@ -165,14 +167,13 @@ class _SearchResults extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final matches =
-        kAllCities
-            .where(
-              (c) =>
-                  c.name.toLowerCase().contains(query) &&
-                  !savedNames.contains(c.name),
-            )
-            .toList();
+    final matches = kAllCities
+        .where(
+          (c) =>
+              c.name.toLowerCase().contains(query) &&
+              !savedNames.contains(c.name),
+        )
+        .toList();
 
     if (matches.isEmpty) {
       return Container(
@@ -185,36 +186,52 @@ class _SearchResults extends ConsumerWidget {
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: kCard,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: matches.length,
-        separatorBuilder: (context, index) =>
-            const Divider(height: 1, thickness: 0.5),
-        itemBuilder: (_, i) {
-          final c = matches[i];
-          return GestureDetector(
-            onTap: () => onAdd(c),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(c.name, style: AppTextStyles.cardCity(size: 14)),
-                  Text(
-                    _fmtUtc(c.timezoneOffsetSeconds),
-                    style: AppTextStyles.cardUtc(size: 12),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(color: kCard),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 270),
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: matches.length > 6
+                ? const BouncingScrollPhysics()
+                : const NeverScrollableScrollPhysics(),
+            itemCount: matches.length,
+            separatorBuilder: (context, index) =>
+                const Divider(height: 1, thickness: 0.5),
+            itemBuilder: (_, i) {
+              final c = matches[i];
+              return GestureDetector(
+                onTap: () => onAdd(c),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 11,
                   ),
-                ],
-              ),
-            ),
-          );
-        },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          c.name,
+                          style: AppTextStyles.cardCity(size: 14),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        _fmtUtc(c.timezoneOffsetSeconds),
+                        style: AppTextStyles.cardUtc(size: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -232,22 +249,130 @@ class _SearchResults extends ConsumerWidget {
 
 // ── Full 18-city catalog (matches HTML ALL_CITIES) ────────────────────────────
 const kAllCities = [
-  CityModel(name: 'London',      country: 'UK',           lat: 51.5,  lon:  -0.1,  timezoneOffsetSeconds:  3600),
-  CityModel(name: 'Paris',       country: 'France',       lat: 48.9,  lon:   2.3,  timezoneOffsetSeconds:  7200),
-  CityModel(name: 'New York',    country: 'US',           lat: 40.7,  lon: -74.0,  timezoneOffsetSeconds: -14400),
-  CityModel(name: 'Los Angeles', country: 'US',           lat: 34.0,  lon:-118.2,  timezoneOffsetSeconds: -25200),
-  CityModel(name: 'Tokyo',       country: 'Japan',        lat: 35.7,  lon: 139.7,  timezoneOffsetSeconds:  32400),
-  CityModel(name: 'Dubai',       country: 'UAE',          lat: 25.2,  lon:  55.3,  timezoneOffsetSeconds:  14400),
-  CityModel(name: 'Sydney',      country: 'Australia',    lat:-33.9,  lon: 151.2,  timezoneOffsetSeconds:  36000),
-  CityModel(name: 'Singapore',   country: 'Singapore',    lat:  1.3,  lon: 103.8,  timezoneOffsetSeconds:  28800),
-  CityModel(name: 'São Paulo',   country: 'Brazil',       lat:-23.5,  lon: -46.6,  timezoneOffsetSeconds: -10800),
-  CityModel(name: 'Mumbai',      country: 'India',        lat: 19.1,  lon:  72.9,  timezoneOffsetSeconds:  19800),
-  CityModel(name: 'Berlin',      country: 'Germany',      lat: 52.5,  lon:  13.4,  timezoneOffsetSeconds:  7200),
-  CityModel(name: 'Cairo',       country: 'Egypt',        lat: 30.0,  lon:  31.2,  timezoneOffsetSeconds:  7200),
-  CityModel(name: 'Toronto',     country: 'Canada',       lat: 43.7,  lon: -79.4,  timezoneOffsetSeconds: -14400),
-  CityModel(name: 'Mexico City', country: 'Mexico',       lat: 19.4,  lon: -99.1,  timezoneOffsetSeconds: -21600),
-  CityModel(name: 'Seoul',       country: 'South Korea',  lat: 37.6,  lon: 126.9,  timezoneOffsetSeconds:  32400),
-  CityModel(name: 'Amsterdam',   country: 'Netherlands',  lat: 52.4,  lon:   4.9,  timezoneOffsetSeconds:  7200),
-  CityModel(name: 'Chicago',     country: 'US',           lat: 41.9,  lon: -87.6,  timezoneOffsetSeconds: -18000),
-  CityModel(name: 'Hong Kong',   country: 'China',        lat: 22.3,  lon: 114.2,  timezoneOffsetSeconds:  28800),
+  CityModel(
+    name: 'London',
+    country: 'UK',
+    lat: 51.5,
+    lon: -0.1,
+    timezoneOffsetSeconds: 3600,
+  ),
+  CityModel(
+    name: 'Paris',
+    country: 'France',
+    lat: 48.9,
+    lon: 2.3,
+    timezoneOffsetSeconds: 7200,
+  ),
+  CityModel(
+    name: 'New York',
+    country: 'US',
+    lat: 40.7,
+    lon: -74.0,
+    timezoneOffsetSeconds: -14400,
+  ),
+  CityModel(
+    name: 'Los Angeles',
+    country: 'US',
+    lat: 34.0,
+    lon: -118.2,
+    timezoneOffsetSeconds: -25200,
+  ),
+  CityModel(
+    name: 'Tokyo',
+    country: 'Japan',
+    lat: 35.7,
+    lon: 139.7,
+    timezoneOffsetSeconds: 32400,
+  ),
+  CityModel(
+    name: 'Dubai',
+    country: 'UAE',
+    lat: 25.2,
+    lon: 55.3,
+    timezoneOffsetSeconds: 14400,
+  ),
+  CityModel(
+    name: 'Sydney',
+    country: 'Australia',
+    lat: -33.9,
+    lon: 151.2,
+    timezoneOffsetSeconds: 36000,
+  ),
+  CityModel(
+    name: 'Singapore',
+    country: 'Singapore',
+    lat: 1.3,
+    lon: 103.8,
+    timezoneOffsetSeconds: 28800,
+  ),
+  CityModel(
+    name: 'São Paulo',
+    country: 'Brazil',
+    lat: -23.5,
+    lon: -46.6,
+    timezoneOffsetSeconds: -10800,
+  ),
+  CityModel(
+    name: 'Mumbai',
+    country: 'India',
+    lat: 19.1,
+    lon: 72.9,
+    timezoneOffsetSeconds: 19800,
+  ),
+  CityModel(
+    name: 'Berlin',
+    country: 'Germany',
+    lat: 52.5,
+    lon: 13.4,
+    timezoneOffsetSeconds: 7200,
+  ),
+  CityModel(
+    name: 'Cairo',
+    country: 'Egypt',
+    lat: 30.0,
+    lon: 31.2,
+    timezoneOffsetSeconds: 7200,
+  ),
+  CityModel(
+    name: 'Toronto',
+    country: 'Canada',
+    lat: 43.7,
+    lon: -79.4,
+    timezoneOffsetSeconds: -14400,
+  ),
+  CityModel(
+    name: 'Mexico City',
+    country: 'Mexico',
+    lat: 19.4,
+    lon: -99.1,
+    timezoneOffsetSeconds: -21600,
+  ),
+  CityModel(
+    name: 'Seoul',
+    country: 'South Korea',
+    lat: 37.6,
+    lon: 126.9,
+    timezoneOffsetSeconds: 32400,
+  ),
+  CityModel(
+    name: 'Amsterdam',
+    country: 'Netherlands',
+    lat: 52.4,
+    lon: 4.9,
+    timezoneOffsetSeconds: 7200,
+  ),
+  CityModel(
+    name: 'Chicago',
+    country: 'US',
+    lat: 41.9,
+    lon: -87.6,
+    timezoneOffsetSeconds: -18000,
+  ),
+  CityModel(
+    name: 'Hong Kong',
+    country: 'China',
+    lat: 22.3,
+    lon: 114.2,
+    timezoneOffsetSeconds: 28800,
+  ),
 ];

@@ -39,30 +39,53 @@ class CityTimeCard extends ConsumerWidget {
       onTap: () => ref.read(activeCityProvider.notifier).setCity(city),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.fromLTRB(18, 16, 10, 18),
+        padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
         decoration: BoxDecoration(
           color: isActive ? kBlack : kCard,
           borderRadius: BorderRadius.circular(22),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            // City name + UTC + delete
-            Row(
+            Positioned(
+              top: -6,
+              right: -8,
+              child: GestureDetector(
+                onTap: onDelete,
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.close,
+                    size: 13,
+                    color: isActive ? kWhite : kDim,
+                  ),
+                ),
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                // City name + UTC
+                Padding(
+                  padding: const EdgeInsets.only(right: 18),
+                  child: Row(
                     children: [
-                      Text(
-                        city.name,
-                        style: AppTextStyles.cardCity(
-                          size: 14,
-                          color: isActive ? kWhite : kBlack,
+                      Expanded(
+                        child: Text(
+                          city.name,
+                          style: AppTextStyles.cardCity(
+                            size: 14,
+                            color: isActive ? kWhite : kBlack,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         _fmtUtc(city.timezoneOffsetSeconds),
                         style: AppTextStyles.cardUtc(
@@ -75,55 +98,43 @@ class CityTimeCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-                GestureDetector(
-                  onTap: onDelete,
-                  child: Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
+                const Spacer(),
+                // Day / Night
+                Row(
+                  children: [
+                    Text(
+                      isDay ? 'Day' : 'Night',
+                      style: AppTextStyles.cardUtc(
+                        size: 12,
+                        color: isActive ? kWhite.withValues(alpha: 0.5) : kDim,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.close,
+                    const SizedBox(width: 5),
+                    Icon(
+                      isDay ? Icons.wb_sunny : Icons.brightness_2,
+                      color: isDay
+                          ? kOrange
+                          : (isActive
+                                ? Colors.white54
+                                : const Color(0xFF888888)),
                       size: 13,
-                      color: isActive ? kWhite : kDim,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Time
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    timeStr,
+                    style: AppTextStyles.cardTime(
+                      size: 30,
+                      color: isActive ? kWhite : kBlack,
                     ),
                   ),
                 ),
               ],
-            ),
-            const Spacer(),
-            // Day / Night
-            Row(
-              children: [
-                Text(
-                  isDay ? 'Day' : 'Night',
-                  style: AppTextStyles.cardUtc(
-                    size: 12,
-                    color: isActive ? kWhite.withValues(alpha: 0.5) : kDim,
-                  ),
-                ),
-                const SizedBox(width: 5),
-                Icon(
-                  isDay ? Icons.wb_sunny : Icons.brightness_2,
-                  color: isDay ? kOrange : (isActive ? Colors.white54 : const Color(0xFF888888)),
-                  size: 13,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // Time
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                timeStr,
-                style: AppTextStyles.cardTime(
-                  size: 30,
-                  color: isActive ? kWhite : kBlack,
-                ),
-              ),
             ),
           ],
         ),

@@ -4,12 +4,36 @@ import '../../../core/utils/timezone_utils.dart';
 
 part 'clock_provider.g.dart';
 
+const _london = CityModel(
+  name: 'London',
+  country: 'UK',
+  lat: 51.5,
+  lon: -0.1,
+  timezoneOffsetSeconds: 3600,
+);
+
+const _paris = CityModel(
+  name: 'Paris',
+  country: 'France',
+  lat: 48.9,
+  lon: 2.3,
+  timezoneOffsetSeconds: 7200,
+);
+
+const _newYork = CityModel(
+  name: 'New York',
+  country: 'US',
+  lat: 40.7,
+  lon: -74.0,
+  timezoneOffsetSeconds: -14400,
+);
+
 const _losAngeles = CityModel(
   name: 'Los Angeles',
-  country: 'California, USA',
-  lat: 34.0522,
-  lon: -118.2437,
-  timezoneOffsetSeconds: -28800,
+  country: 'US',
+  lat: 34.0,
+  lon: -118.2,
+  timezoneOffsetSeconds: -25200,
 );
 
 @riverpod
@@ -34,30 +58,7 @@ class ActiveCity extends _$ActiveCity {
 class SavedCities extends _$SavedCities {
   @override
   List<CityModel> build() {
-    return [
-      const CityModel(
-        name: 'London',
-        country: 'UK',
-        lat: 51.5074,
-        lon: -0.1278,
-        timezoneOffsetSeconds: 0,
-      ),
-      const CityModel(
-        name: 'Paris',
-        country: 'France',
-        lat: 48.8566,
-        lon: 2.3522,
-        timezoneOffsetSeconds: 3600,
-      ),
-      const CityModel(
-        name: 'New York',
-        country: 'US',
-        lat: 40.7128,
-        lon: -74.0060,
-        timezoneOffsetSeconds: -18000, // UTC-5
-      ),
-      _losAngeles,
-    ];
+    return [_london, _paris, _newYork, _losAngeles];
   }
 
   void addCity(CityModel city) {
