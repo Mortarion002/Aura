@@ -14,7 +14,7 @@ class TimerScreen extends StatefulWidget {
 }
 
 class _TimerScreenState extends State<TimerScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   static const _defaultDuration = Duration(minutes: 4);
 
   Duration _duration = _defaultDuration;
@@ -22,9 +22,12 @@ class _TimerScreenState extends State<TimerScreen>
   bool _running = false;
   final List<_Lap> _laps = [];
   Duration _lastLapElapsed = Duration.zero;
+  DateTime? _runStartedAt;
+  Duration _elapsedAtRunStart = Duration.zero;
 
   Timer? _countdownTimer;
   late final AnimationController _orbitCtrl;
+  late final AnimationController _finishCtrl;
 
   @override
   void initState() {
@@ -33,53 +36,87 @@ class _TimerScreenState extends State<TimerScreen>
       vsync: this,
       duration: const Duration(seconds: 60),
     )..repeat();
+    _finishCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
   }
 
   @override
   void dispose() {
     _countdownTimer?.cancel();
     _orbitCtrl.dispose();
+    _finishCtrl.dispose();
     super.dispose();
   }
 
   void _startCountdown() {
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() {
-        _elapsed += const Duration(seconds: 1);
-        if (_elapsed >= _duration) {
-          _elapsed = _duration;
-          _countdownTimer?.cancel();
-          _running = false;
-        }
-      });
+    _runStartedAt = DateTime.now();
+    _elapsedAtRunStart = _elapsed;
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(
+      const Duration(milliseconds: 250),
+      (_) => _syncElapsed(),
+    );
+  }
+
+  Duration _currentElapsed() {
+    final startedAt = _runStartedAt;
+    if (!_running || startedAt == null) return _elapsed;
+    final liveElapsed =
+        _elapsedAtRunStart + DateTime.now().difference(startedAt);
+    return liveElapsed > _duration ? _duration : liveElapsed;
+  }
+
+  void _syncElapsed() {
+    if (!_running) return;
+    final nextElapsed = _currentElapsed();
+    setState(() {
+      _elapsed = nextElapsed;
+      if (_elapsed >= _duration) {
+        _elapsed = _duration;
+        _running = false;
+        _runStartedAt = null;
+        _countdownTimer?.cancel();
+        _finishCtrl.forward(from: 0);
+      }
     });
   }
 
   void _toggleRun() {
+    final wasRunning = _running;
+    final currentElapsed = _currentElapsed();
     setState(() {
-      if (_elapsed >= _duration) {
+      if (wasRunning) {
+        _elapsed = currentElapsed;
+        _running = false;
+        _runStartedAt = null;
+        _countdownTimer?.cancel();
+        return;
+      }
+
+      if (currentElapsed >= _duration) {
         _elapsed = Duration.zero;
         _laps.clear();
         _lastLapElapsed = Duration.zero;
       }
-      _running = !_running;
-      if (_running) {
-        _startCountdown();
-      } else {
-        _countdownTimer?.cancel();
-      }
+      _running = true;
+      _finishCtrl.reset();
+      _startCountdown();
     });
   }
 
   void _doLap() {
     if (!_running) return;
+    final currentElapsed = _currentElapsed();
     setState(() {
-      _laps.insert(0, _Lap(
-        lapTime: _elapsed - _lastLapElapsed,
-        total: _elapsed,
-      ));
+      _elapsed = currentElapsed;
+      _laps.insert(
+        0,
+        _Lap(lapTime: currentElapsed - _lastLapElapsed, total: currentElapsed),
+      );
       if (_laps.length > 5) _laps.removeLast();
-      _lastLapElapsed = _elapsed;
+      _lastLapElapsed = currentElapsed;
     });
   }
 
@@ -90,14 +127,17 @@ class _TimerScreenState extends State<TimerScreen>
       _elapsed = Duration.zero;
       _laps.clear();
       _lastLapElapsed = Duration.zero;
+      _runStartedAt = null;
+      _elapsedAtRunStart = Duration.zero;
+      _finishCtrl.reset();
     });
   }
 
   Future<void> _showDurationPicker() async {
     if (_running) return;
     int pickHours = _duration.inHours;
-    int pickMins  = _duration.inMinutes.remainder(60);
-    int pickSecs  = _duration.inSeconds.remainder(60);
+    int pickMins = _duration.inMinutes.remainder(60);
+    int pickSecs = _duration.inSeconds.remainder(60);
 
     await showModalBottomSheet<void>(
       context: context,
@@ -151,6 +191,9 @@ class _TimerScreenState extends State<TimerScreen>
                         _elapsed = Duration.zero;
                         _laps.clear();
                         _lastLapElapsed = Duration.zero;
+                        _runStartedAt = null;
+                        _elapsedAtRunStart = Duration.zero;
+                        _finishCtrl.reset();
                       });
                     }
                     Navigator.pop(context);
@@ -183,12 +226,22 @@ class _TimerScreenState extends State<TimerScreen>
     return '$h:$m:$s';
   }
 
+  Duration _ceilToSecond(Duration d) {
+    if (d <= Duration.zero) return Duration.zero;
+    final wholeSeconds = d.inSeconds;
+    return d.inMilliseconds % 1000 == 0
+        ? Duration(seconds: wholeSeconds)
+        : Duration(seconds: wholeSeconds + 1);
+  }
+
   @override
   Widget build(BuildContext context) {
     final remaining = _duration - _elapsed;
-    final progress = _duration.inSeconds > 0
-        ? _elapsed.inSeconds / _duration.inSeconds
+    final displayRemaining = _ceilToSecond(remaining);
+    final progress = _duration.inMilliseconds > 0
+        ? _elapsed.inMilliseconds / _duration.inMilliseconds
         : 0.0;
+    final timerSize = math.min(MediaQuery.sizeOf(context).width - 44, 320.0);
 
     return SafeArea(
       child: Column(
@@ -209,14 +262,17 @@ class _TimerScreenState extends State<TimerScreen>
           // Concentric circles — tap to set duration
           GestureDetector(
             onTap: _showDurationPicker,
-            child: AnimatedBuilder(
-              animation: _orbitCtrl,
-              builder: (_, child) => CustomPaint(
-                size: const Size(320, 320),
-                painter: _TimerPainter(
-                  progress: progress,
-                  orbitAngle: _orbitCtrl.value * 2 * math.pi,
-                  timeLabel: _fmt(remaining),
+            child: SizedBox.square(
+              dimension: timerSize,
+              child: AnimatedBuilder(
+                animation: Listenable.merge([_orbitCtrl, _finishCtrl]),
+                builder: (_, child) => CustomPaint(
+                  painter: _TimerPainter(
+                    progress: progress,
+                    orbitAngle: _orbitCtrl.value * 2 * math.pi,
+                    timeLabel: _fmt(displayRemaining),
+                    finishPulse: _finishCtrl.value,
+                  ),
                 ),
               ),
             ),
@@ -233,12 +289,16 @@ class _TimerScreenState extends State<TimerScreen>
                     Row(
                       children: [
                         Expanded(
-                          child: Text('LAP TIME',
-                              style: AppTextStyles.cardUtc(size: 11)),
+                          child: Text(
+                            'LAP TIME',
+                            style: AppTextStyles.cardUtc(size: 11),
+                          ),
                         ),
                         Expanded(
-                          child: Text('TOTAL TIME',
-                              style: AppTextStyles.cardUtc(size: 11)),
+                          child: Text(
+                            'TOTAL TIME',
+                            style: AppTextStyles.cardUtc(size: 11),
+                          ),
                         ),
                       ],
                     ),
@@ -286,9 +346,7 @@ class _TimerScreenState extends State<TimerScreen>
                 _CtrlBtn(
                   icon: Icons.flag_outlined,
                   color: kCard,
-                  iconColor: _running
-                      ? kDim
-                      : kDim.withValues(alpha: 0.4),
+                  iconColor: _running ? kDim : kDim.withValues(alpha: 0.4),
                   onTap: _doLap,
                 ),
                 _CtrlBtn(
@@ -317,11 +375,13 @@ class _TimerPainter extends CustomPainter {
   final double progress;
   final double orbitAngle;
   final String timeLabel;
+  final double finishPulse;
 
   const _TimerPainter({
     required this.progress,
     required this.orbitAngle,
     required this.timeLabel,
+    required this.finishPulse,
   });
 
   @override
@@ -342,7 +402,7 @@ class _TimerPainter extends CustomPainter {
         ..strokeWidth = trackWidth,
     );
 
-    // Countdown arc (remaining = white, elapsed = missing)
+    // Countdown arc (remaining = black, elapsed = missing)
     if (progress < 1.0) {
       canvas.drawArc(
         Rect.fromCircle(center: Offset(cx, cy), radius: outerR),
@@ -351,6 +411,16 @@ class _TimerPainter extends CustomPainter {
         false,
         Paint()
           ..color = kBlack
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = trackWidth
+          ..strokeCap = StrokeCap.round,
+      );
+    } else if (finishPulse > 0) {
+      canvas.drawCircle(
+        Offset(cx, cy),
+        outerR,
+        Paint()
+          ..color = Color.lerp(kOrange, kBlack, finishPulse)!
           ..style = PaintingStyle.stroke
           ..strokeWidth = trackWidth
           ..strokeCap = StrokeCap.round,
@@ -367,9 +437,7 @@ class _TimerPainter extends CustomPainter {
         Offset(cx + rOuter * math.cos(angle), cy + rOuter * math.sin(angle)),
         Offset(cx + rInner * math.cos(angle), cy + rInner * math.sin(angle)),
         Paint()
-          ..color = isMajor
-              ? const Color(0xFFAAAAAA)
-              : const Color(0xFFDDDDDD)
+          ..color = isMajor ? const Color(0xFFAAAAAA) : const Color(0xFFDDDDDD)
           ..strokeWidth = isMajor ? 1.5 : 1.0
           ..strokeCap = StrokeCap.round,
       );
@@ -424,7 +492,8 @@ class _TimerPainter extends CustomPainter {
   bool shouldRepaint(_TimerPainter old) =>
       old.progress != progress ||
       old.orbitAngle != orbitAngle ||
-      old.timeLabel != timeLabel;
+      old.timeLabel != timeLabel ||
+      old.finishPulse != finishPulse;
 }
 
 // ── Control button ─────────────────────────────────────────────────────────────
@@ -476,8 +545,9 @@ class _Picker extends StatelessWidget {
           Text(label, style: AppTextStyles.cardUtc(size: 12)),
           Expanded(
             child: CupertinoPicker(
-              scrollController:
-                  FixedExtentScrollController(initialItem: initial),
+              scrollController: FixedExtentScrollController(
+                initialItem: initial,
+              ),
               itemExtent: 40,
               onSelectedItemChanged: onChanged,
               children: List.generate(
