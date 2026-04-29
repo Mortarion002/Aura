@@ -13,31 +13,17 @@ import 'providers/weather_provider.dart';
 import 'widgets/dotted_globe.dart';
 import 'widgets/sunrise_sunset_bar.dart';
 import 'forecast_screen.dart';
+import '../../clock/providers/clock_provider.dart';
 
 class WeatherScreen extends ConsumerWidget {
   const WeatherScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cityName = ref.watch(selectedCityProvider);
+    final activeCity = ref.watch(activeCityProvider);
 
     return OrangeBorderScaffold(
-      body: Column(
-        children: [
-          const TopAppBar(),
-          Expanded(
-            child: cityName == null
-                ? const Center(
-                    child: Text(
-                      'No city selected.\nSearch and add a city.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: kTextSecond, fontSize: 16),
-                    ),
-                  )
-                : _buildWeatherContent(context, ref, cityName),
-          ),
-        ],
-      ),
+      body: _buildWeatherContent(context, ref, activeCity.name),
     );
   }
 
@@ -51,10 +37,13 @@ class WeatherScreen extends ConsumerWidget {
           children: [
             // Hero: Dotted Globe
             Center(
-              child: DottedGlobe(
-                latitude: weather.lat,
-                longitude: weather.lon,
-                size: MediaQuery.of(context).size.width * 0.9,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 40.0),
+                child: DottedGlobe(
+                  latitude: weather.lat,
+                  longitude: weather.lon,
+                  size: MediaQuery.of(context).size.width * 0.95,
+                ),
               ),
             ),
             // Content Overlays
@@ -62,48 +51,50 @@ class WeatherScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Date Label
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            DateFormatter.dayAndDate(DateTime.now()),
-                            style: AppTextStyles.cardCity,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            weather.cityName,
-                            style: AppTextStyles.labelSmall,
-                          ),
-                        ],
-                      ),
-                      // Temperature
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            TempFormatter.format(weather.temperature, unit).replaceAll('°', ''),
-                            style: AppTextStyles.displaySeconds.copyWith(
-                              fontSize: 96,
-                              height: 0.9,
+                      // Logo & Date
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.token, size: 32), // Placeholder logo
+                                const SizedBox(width: 48),
+                                const Icon(Icons.apps, size: 28),
+                              ],
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              TempFormatter.unitLabel(unit),
-                              style: AppTextStyles.cardCity.copyWith(
-                                fontSize: 24,
-                                color: kTextSecond,
+                            const SizedBox(height: 48),
+                            Text(
+                              DateFormatter.dayAndDate(DateTime.now()).replaceFirst(' ', ',\n'),
+                              style: AppTextStyles.cardCity.copyWith(height: 1.3),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Toggles & Temperature
+                      const SizedBox(width: 16),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const SizedBox(height: 8),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                TempFormatter.format(weather.temperature, unit),
+                                style: AppTextStyles.displayHours.copyWith(
+                                  fontSize: 64,
+                                  letterSpacing: 0,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -121,10 +112,12 @@ class WeatherScreen extends ConsumerWidget {
                     children: [
                       const Icon(Icons.keyboard_arrow_up, color: kTextSecond),
                       Text('Swipe for forecast', style: AppTextStyles.labelSmall.copyWith(color: kTextSecond)),
+                      const SizedBox(height: 16),
                       SunriseSunsetBar(
                         sunrise: weather.sunrise,
                         sunset: weather.sunset,
                       ),
+                      const SizedBox(height: 120), // Prevents overlap with Bottom Nav Bar
                     ],
                   ),
                 ),

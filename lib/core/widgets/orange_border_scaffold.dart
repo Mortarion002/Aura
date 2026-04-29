@@ -17,8 +17,20 @@ class OrangeBorderScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            colors: [
+              Color(0xFFEFEBE0), // Warmer tan top-right
+              Color(0xFFDFD1B8), // Lighter beige bottom-left
+            ],
+          ),
+        ),
+        child: SafeArea(
           child: body,
+        ),
       ),
       bottomNavigationBar: bottomNavigationBar,
     );

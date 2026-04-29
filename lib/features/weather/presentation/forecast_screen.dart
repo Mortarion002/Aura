@@ -10,27 +10,21 @@ import '../../../core/widgets/orange_border_scaffold.dart';
 import '../../../core/widgets/retry_error_card.dart';
 import '../../../core/storage/unit_provider.dart';
 import 'providers/weather_provider.dart';
+import '../../clock/providers/clock_provider.dart';
 
 class ForecastScreen extends ConsumerWidget {
   const ForecastScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cityName = ref.watch(selectedCityProvider);
+    final activeCity = ref.watch(activeCityProvider);
 
     return OrangeBorderScaffold(
       body: Column(
         children: [
-          _buildHeader(context, cityName),
+          _buildHeader(context, activeCity.name),
           Expanded(
-            child: cityName == null
-                ? const Center(
-                    child: Text(
-                      'No city selected.',
-                      style: TextStyle(color: kTextSecond, fontSize: 16),
-                    ),
-                  )
-                : _buildForecastContent(context, ref, cityName),
+            child: _buildForecastContent(context, ref, activeCity.name),
           ),
         ],
       ),

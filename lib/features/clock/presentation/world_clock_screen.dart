@@ -52,7 +52,7 @@ class WorldClockScreen extends ConsumerWidget {
                         crossAxisCount: 2,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: 0.85,
+                        childAspectRatio: 0.8,
                       ),
                       itemCount: citiesList.length,
                       itemBuilder: (context, index) {

@@ -63,14 +63,16 @@ class _DrumClockView extends ConsumerWidget {
                 ),
                 const SizedBox(width: 16),
                 // Date and extra info
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${_getShortDay(currentTime.weekday)},\n${currentTime.day} ${_getShortMonth(currentTime.month)}',
-                      style: AppTextStyles.cardCity.copyWith(fontSize: 24, height: 1.2),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${_getShortDay(currentTime.weekday)},\n${currentTime.day} ${_getShortMonth(currentTime.month)}',
+                        style: AppTextStyles.cardCity.copyWith(fontSize: 24, height: 1.2),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

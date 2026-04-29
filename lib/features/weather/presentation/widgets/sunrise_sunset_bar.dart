@@ -23,43 +23,106 @@ class SunriseSunsetBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
         children: [
-          _buildInfo(
-            icon: Icons.wb_sunny_outlined,
-            label: 'Sunrise',
-            time: _formatTime(sunrise),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildInfo(
+                icon: Icons.wb_sunny_outlined,
+                time: _formatTime(sunrise),
+                color: kOrange,
+              ),
+              _buildInfo(
+                icon: Icons.brightness_3_outlined,
+                time: _formatTime(sunset),
+                color: kBlack,
+              ),
+            ],
           ),
-          _buildInfo(
-            icon: Icons.brightness_3_outlined,
-            label: 'Sunset',
-            time: _formatTime(sunset),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 40,
+            width: double.infinity,
+            child: CustomPaint(
+              painter: _ArcPainter(
+                sunrise: sunrise,
+                sunset: sunset,
+                now: DateTime.now(),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInfo({required IconData icon, required String label, required String time}) {
+  Widget _buildInfo({required IconData icon, required String time, required Color color}) {
     return Row(
       children: [
-        Icon(icon, color: kTextPrimary, size: 24),
+        Icon(icon, color: color, size: 20),
         const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: AppTextStyles.labelSmall.copyWith(color: kTextSecond),
-            ),
-            Text(
-              time,
-              style: AppTextStyles.cardCity.copyWith(fontSize: 16),
-            ),
-          ],
+        Text(
+          time.toLowerCase(),
+          style: AppTextStyles.cardCity.copyWith(fontSize: 14, color: kTextSecond),
         ),
       ],
     );
+  }
+}
+
+class _ArcPainter extends CustomPainter {
+  final DateTime sunrise;
+  final DateTime sunset;
+  final DateTime now;
+
+  _ArcPainter({required this.sunrise, required this.sunset, required this.now});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = kBlack.withValues(alpha: 0.3)
+      ..style = PaintingStyle.fill;
+
+    final dotPaint = Paint()
+      ..color = kBlack
+      ..style = PaintingStyle.fill;
+
+    final w = size.width;
+    final h = size.height;
+
+    // Draw dotted curve (sine wave)
+    const int dotCount = 40;
+    for (int i = 0; i <= dotCount; i++) {
+      double t = i / dotCount;
+      double x = t * w;
+      // Arc formula: y = h - sin(t * pi) * h
+      double y = h - (1 - (2 * t - 1).abs() * (2 * t - 1).abs()) * h * 0.8; 
+      canvas.drawCircle(Offset(x, y), 1.5, paint);
+    }
+
+    // Calculate position for current time
+    double progress = 0.0;
+    final totalDuration = sunset.difference(sunrise).inMinutes;
+    final elapsed = now.difference(sunrise).inMinutes;
+
+    if (totalDuration > 0) {
+      progress = elapsed / totalDuration;
+    }
+    // Clamp between -0.2 and 1.2 to show it before sunrise or after sunset
+    progress = progress.clamp(-0.2, 1.2);
+
+    // If it's night time, maybe show it flat? For now, just follow the curve extended.
+    double x = progress * w;
+    x = x.clamp(0.0, w);
+    double t = x / w;
+    double y = h - (1 - (2 * t - 1).abs() * (2 * t - 1).abs()) * h * 0.8;
+
+    canvas.drawCircle(Offset(x, y), 5.0, dotPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ArcPainter oldDelegate) {
+    return oldDelegate.now.minute != now.minute;
   }
 }
