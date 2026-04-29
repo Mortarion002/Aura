@@ -4,6 +4,7 @@ import '../../../core/models/city_model.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/text_styles.dart';
 import '../../../core/widgets/aura_logo.dart';
+import '../../../core/widgets/screen_enter.dart';
 import '../../clock/providers/clock_provider.dart';
 import '../providers/world_clock_provider.dart';
 import 'widgets/city_time_card.dart';
@@ -35,119 +36,124 @@ class _WorldClockScreenState extends ConsumerState<WorldClockScreen> {
 
     final displayCities = worldTimes.entries.toList();
 
-    return SafeArea(
-      child: Column(
-        children: [
-          // Header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 4, 14, 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const AuraLogo(size: 30),
-                GestureDetector(
-                  onTap: () => setState(() {
-                    _searching = !_searching;
-                    if (!_searching) _queryCtrl.clear();
-                  }),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: _searching ? kBlack : kCard,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.search,
-                      size: 17,
-                      color: _searching ? kWhite : kDim,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Search bar
-          if (_searching) ...[
+    return ScreenEnter(
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
-              child: Column(
+              padding: const EdgeInsets.fromLTRB(14, 4, 14, 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  TextField(
-                    controller: _queryCtrl,
-                    autofocus: true,
-                    onChanged: (_) => setState(() {}),
-                    style: AppTextStyles.cardCity(size: 14),
-                    decoration: InputDecoration(
-                      hintText: 'Search city…',
-                      hintStyle: AppTextStyles.cardCity(size: 14, color: kDim),
-                      filled: true,
-                      fillColor: kCard,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
+                  const AuraLogo(size: 30),
+                  GestureDetector(
+                    onTap: () => setState(() {
+                      _searching = !_searching;
+                      if (!_searching) _queryCtrl.clear();
+                    }),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: _searching ? kBlack : kCard,
+                        shape: BoxShape.circle,
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
+                      child: Icon(
+                        Icons.search,
+                        size: 17,
+                        color: _searching ? kWhite : kDim,
                       ),
                     ),
                   ),
-                  if (query.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    _SearchResults(
-                      query: query,
-                      savedNames: savedCities.map((c) => c.name).toSet(),
-                      onAdd: (city) {
-                        ref.read(savedCitiesProvider.notifier).addCity(city);
-                        _queryCtrl.clear();
-                        _searching = false;
-                        setState(() {});
-                      },
-                    ),
-                  ],
                 ],
               ),
             ),
-          ],
 
-          // City grid
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
-              physics: const BouncingScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 1.15,
+            // Search bar
+            if (_searching) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _queryCtrl,
+                      autofocus: true,
+                      onChanged: (_) => setState(() {}),
+                      style: AppTextStyles.cardCity(size: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Search city…',
+                        hintStyle: AppTextStyles.cardCity(
+                          size: 14,
+                          color: kDim,
+                        ),
+                        filled: true,
+                        fillColor: kCard,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    if (query.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      _SearchResults(
+                        query: query,
+                        savedNames: savedCities.map((c) => c.name).toSet(),
+                        onAdd: (city) {
+                          ref.read(savedCitiesProvider.notifier).addCity(city);
+                          _queryCtrl.clear();
+                          _searching = false;
+                          setState(() {});
+                        },
+                      ),
+                    ],
+                  ],
+                ),
               ),
-              itemCount: displayCities.length,
-              itemBuilder: (context, i) {
-                final entry = displayCities[i];
-                return CityTimeCard(
-                  city: entry.key,
-                  time: entry.value,
-                  is24Hour: is24Hour,
-                  isActive: entry.key == activeCity,
-                  onDelete: () {
-                    ref
-                        .read(savedCitiesProvider.notifier)
-                        .removeCity(entry.key);
-                    if (entry.key == activeCity && savedCities.length > 1) {
-                      final next = savedCities.firstWhere(
-                        (c) => c != entry.key,
-                      );
-                      ref.read(activeCityProvider.notifier).setCity(next);
-                    }
-                  },
-                );
-              },
+            ],
+
+            // City grid
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+                physics: const BouncingScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 1.15,
+                ),
+                itemCount: displayCities.length,
+                itemBuilder: (context, i) {
+                  final entry = displayCities[i];
+                  return CityTimeCard(
+                    city: entry.key,
+                    time: entry.value,
+                    is24Hour: is24Hour,
+                    isActive: entry.key == activeCity,
+                    onDelete: () {
+                      ref
+                          .read(savedCitiesProvider.notifier)
+                          .removeCity(entry.key);
+                      if (entry.key == activeCity && savedCities.length > 1) {
+                        final next = savedCities.firstWhere(
+                          (c) => c != entry.key,
+                        );
+                        ref.read(activeCityProvider.notifier).setCity(next);
+                      }
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

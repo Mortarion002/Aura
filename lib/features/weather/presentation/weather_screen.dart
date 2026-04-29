@@ -8,6 +8,7 @@ import '../../../core/utils/date_formatter.dart';
 import '../../../core/utils/temp_formatter.dart';
 import '../../../core/widgets/aura_logo.dart';
 import '../../../core/widgets/retry_error_card.dart';
+import '../../../core/widgets/screen_enter.dart';
 import '../../../core/widgets/toggle_12_24.dart';
 import '../../clock/providers/clock_provider.dart';
 import '../domain/weather_entity.dart';
@@ -48,16 +49,18 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
 
     return Scaffold(
       backgroundColor: kWhite,
-      body: SafeArea(
-        child: weatherAsync.when(
-          data: (weather) =>
-              _WeatherContent(weather: weather, animation: _globeCtrl),
-          loading: () => _buildShimmer(context),
-          error: (err, stack) => Center(
-            child: RetryErrorCard(
-              message: err.toString(),
-              onRetry: () =>
-                  ref.refresh(currentWeatherProvider(activeCity.name)),
+      body: ScreenEnter(
+        child: SafeArea(
+          child: weatherAsync.when(
+            data: (weather) =>
+                _WeatherContent(weather: weather, animation: _globeCtrl),
+            loading: () => _buildShimmer(context),
+            error: (err, stack) => Center(
+              child: RetryErrorCard(
+                message: err.toString(),
+                onRetry: () =>
+                    ref.refresh(currentWeatherProvider(activeCity.name)),
+              ),
             ),
           ),
         ),

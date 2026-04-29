@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/text_styles.dart';
 import '../../../core/widgets/aura_logo.dart';
+import '../../../core/widgets/screen_enter.dart';
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key});
@@ -243,128 +244,130 @@ class _TimerScreenState extends State<TimerScreen>
         : 0.0;
     final timerSize = math.min(MediaQuery.sizeOf(context).width - 44, 320.0);
 
-    return SafeArea(
-      child: Column(
-        children: [
-          // Header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(22, 4, 22, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const AuraLogo(size: 30),
-                Text('Timer', style: AppTextStyles.cardCity(size: 18)),
-                const SizedBox(width: 30),
-              ],
+    return ScreenEnter(
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 4, 22, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const AuraLogo(size: 30),
+                  Text('Timer', style: AppTextStyles.cardCity(size: 18)),
+                  const SizedBox(width: 30),
+                ],
+              ),
             ),
-          ),
 
-          // Concentric circles — tap to set duration
-          GestureDetector(
-            onTap: _showDurationPicker,
-            child: SizedBox.square(
-              dimension: timerSize,
-              child: AnimatedBuilder(
-                animation: Listenable.merge([_orbitCtrl, _finishCtrl]),
-                builder: (_, child) => CustomPaint(
-                  painter: _TimerPainter(
-                    progress: progress,
-                    orbitAngle: _orbitCtrl.value * 2 * math.pi,
-                    timeLabel: _fmt(displayRemaining),
-                    finishPulse: _finishCtrl.value,
+            // Concentric circles — tap to set duration
+            GestureDetector(
+              onTap: _showDurationPicker,
+              child: SizedBox.square(
+                dimension: timerSize,
+                child: AnimatedBuilder(
+                  animation: Listenable.merge([_orbitCtrl, _finishCtrl]),
+                  builder: (_, child) => CustomPaint(
+                    painter: _TimerPainter(
+                      progress: progress,
+                      orbitAngle: _orbitCtrl.value * 2 * math.pi,
+                      timeLabel: _fmt(displayRemaining),
+                      finishPulse: _finishCtrl.value,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // Lap list
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_laps.isNotEmpty) ...[
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'LAP TIME',
-                            style: AppTextStyles.cardUtc(size: 11),
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            'TOTAL TIME',
-                            style: AppTextStyles.cardUtc(size: 11),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                  ..._laps.map(
-                    (l) => Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Row(
+            // Lap list
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_laps.isNotEmpty) ...[
+                      Row(
                         children: [
                           Expanded(
                             child: Text(
-                              _fmt(l.lapTime),
-                              style: AppTextStyles.cardTime(size: 22),
+                              'LAP TIME',
+                              style: AppTextStyles.cardUtc(size: 11),
                             ),
                           ),
                           Expanded(
                             child: Text(
-                              _fmt(l.total),
-                              style: AppTextStyles.cardTime(size: 22),
+                              'TOTAL TIME',
+                              style: AppTextStyles.cardUtc(size: 11),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  if (_laps.isEmpty && _elapsed == Duration.zero)
-                    Center(
-                      child: Text(
-                        'Tap the clock to set duration',
-                        style: AppTextStyles.cardUtc(size: 13),
+                      const SizedBox(height: 8),
+                    ],
+                    ..._laps.map(
+                      (l) => Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _fmt(l.lapTime),
+                                style: AppTextStyles.cardTime(size: 22),
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                _fmt(l.total),
+                                style: AppTextStyles.cardTime(size: 22),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
+                    if (_laps.isEmpty && _elapsed == Duration.zero)
+                      Center(
+                        child: Text(
+                          'Tap the clock to set duration',
+                          style: AppTextStyles.cardUtc(size: 13),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Controls
+            Padding(
+              padding: const EdgeInsets.only(bottom: 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _CtrlBtn(
+                    icon: Icons.flag_outlined,
+                    color: kCard,
+                    iconColor: _running ? kDim : kDim.withValues(alpha: 0.4),
+                    onTap: _doLap,
+                  ),
+                  _CtrlBtn(
+                    icon: _running ? Icons.pause : Icons.play_arrow,
+                    color: _running ? kOrange : kBlack,
+                    iconColor: kWhite,
+                    onTap: _toggleRun,
+                  ),
+                  _CtrlBtn(
+                    icon: Icons.refresh,
+                    color: kCard,
+                    iconColor: kDim,
+                    onTap: _doReset,
+                  ),
                 ],
               ),
             ),
-          ),
-
-          // Controls
-          Padding(
-            padding: const EdgeInsets.only(bottom: 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _CtrlBtn(
-                  icon: Icons.flag_outlined,
-                  color: kCard,
-                  iconColor: _running ? kDim : kDim.withValues(alpha: 0.4),
-                  onTap: _doLap,
-                ),
-                _CtrlBtn(
-                  icon: _running ? Icons.pause : Icons.play_arrow,
-                  color: _running ? kOrange : kBlack,
-                  iconColor: kWhite,
-                  onTap: _toggleRun,
-                ),
-                _CtrlBtn(
-                  icon: Icons.refresh,
-                  color: kCard,
-                  iconColor: kDim,
-                  onTap: _doReset,
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
