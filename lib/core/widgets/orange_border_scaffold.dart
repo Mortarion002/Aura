@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 
-// Thin wrapper kept for backward-compat during migration.
-// Phase 4 will inline it into WeatherScreen.
+// Thin wrapper kept for backward compatibility with older migrated screens.
 class OrangeBorderScaffold extends StatelessWidget {
   final Widget body;
   final Widget? bottomNavigationBar;

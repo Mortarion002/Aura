@@ -5,17 +5,26 @@ import '../../../../core/theme/text_styles.dart';
 class SunriseSunsetBar extends StatelessWidget {
   final DateTime sunrise;
   final DateTime sunset;
+  final int timezoneOffsetSeconds;
 
   const SunriseSunsetBar({
     super.key,
     required this.sunrise,
     required this.sunset,
+    required this.timezoneOffsetSeconds,
   });
 
-  String _formatTime(DateTime t) {
-    final h = t.hour > 12 ? t.hour - 12 : (t.hour == 0 ? 12 : t.hour);
-    final m = t.minute.toString().padLeft(2, '0');
-    final period = t.hour >= 12 ? 'pm' : 'am';
+  DateTime _cityLocal(DateTime time) {
+    return time.toUtc().add(Duration(seconds: timezoneOffsetSeconds));
+  }
+
+  String _formatTime(DateTime time) {
+    final local = _cityLocal(time);
+    final h = local.hour > 12
+        ? local.hour - 12
+        : (local.hour == 0 ? 12 : local.hour);
+    final m = local.minute.toString().padLeft(2, '0');
+    final period = local.hour >= 12 ? 'pm' : 'am';
     return '${h.toString().padLeft(2, '0')}:$m $period';
   }
 
@@ -25,6 +34,18 @@ class SunriseSunsetBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         children: [
+          SizedBox(
+            height: 52,
+            width: double.infinity,
+            child: CustomPaint(
+              painter: _ArcPainter(
+                sunrise: sunrise,
+                sunset: sunset,
+                now: DateTime.now(),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -37,20 +58,9 @@ class SunriseSunsetBar extends StatelessWidget {
                 icon: Icons.wb_twilight,
                 time: _formatTime(sunset),
                 color: kBlack,
+                reverse: true,
               ),
             ],
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            height: 52,
-            width: double.infinity,
-            child: CustomPaint(
-              painter: _ArcPainter(
-                sunrise: sunrise,
-                sunset: sunset,
-                now: DateTime.now(),
-              ),
-            ),
           ),
         ],
       ),
@@ -61,13 +71,17 @@ class SunriseSunsetBar extends StatelessWidget {
     required IconData icon,
     required String time,
     required Color color,
+    bool reverse = false,
   }) {
+    final iconWidget = Icon(icon, color: color, size: 18);
+    final textWidget = Text(
+      time,
+      style: AppTextStyles.cardTime(size: 13, color: kDim),
+    );
     return Row(
-      children: [
-        Icon(icon, color: color, size: 18),
-        const SizedBox(width: 6),
-        Text(time, style: AppTextStyles.cardTime(size: 13, color: kTextSecond)),
-      ],
+      children: reverse
+          ? [textWidget, const SizedBox(width: 6), iconWidget]
+          : [iconWidget, const SizedBox(width: 6), textWidget],
     );
   }
 }
@@ -77,48 +91,105 @@ class _ArcPainter extends CustomPainter {
   final DateTime sunset;
   final DateTime now;
 
-  _ArcPainter({required this.sunrise, required this.sunset, required this.now});
+  const _ArcPainter({
+    required this.sunrise,
+    required this.sunset,
+    required this.now,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = kBlack.withValues(alpha: 0.34)
-      ..style = PaintingStyle.fill;
-
-    final dotPaint = Paint()..color = kBlack..style = PaintingStyle.fill;
+    final width = size.width;
+    final baselineY = size.height * 0.76;
+    const sidePadding = 2.0;
+    final start = Offset(sidePadding, baselineY);
+    final end = Offset(width - sidePadding, baselineY);
+    final control = Offset(width / 2, size.height * 0.02);
 
     final baselinePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.65)
+      ..color = kCard
       ..strokeWidth = 1;
+    canvas.drawLine(start, end, baselinePaint);
 
-    final w = size.width;
-    final h = size.height;
-    final baselineY = h * 0.62;
-    canvas.drawLine(Offset(0, baselineY), Offset(w, baselineY), baselinePaint);
+    final trackPaint = Paint()
+      ..color = kDim.withValues(alpha: 0.48)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+    _drawDashedArc(canvas, start, control, end, trackPaint);
 
-    const int dotCount = 42;
-    for (int i = 0; i <= dotCount; i++) {
-      final t = i / dotCount;
-      final x = t * w;
-      final y =
-          baselineY - (1 - (2 * t - 1).abs() * (2 * t - 1).abs()) * h * 0.46;
-      canvas.drawCircle(Offset(x, y), 1.2, paint);
+    final totalDuration = sunset.difference(sunrise).inSeconds;
+    final elapsed = now.difference(sunrise).inSeconds;
+    final progress = totalDuration > 0
+        ? (elapsed / totalDuration).clamp(0.0, 1.0)
+        : 0.0;
+
+    final progressPaint = Paint()
+      ..color = kOrange
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2
+      ..strokeCap = StrokeCap.round;
+    _drawProgressArc(canvas, start, control, end, progress, progressPaint);
+
+    final sun = _quadraticPoint(start, control, end, progress);
+    canvas.drawCircle(sun, 6, Paint()..color = kOrange);
+    canvas.drawCircle(sun, 3.5, Paint()..color = kOrangePeach);
+  }
+
+  void _drawDashedArc(
+    Canvas canvas,
+    Offset start,
+    Offset control,
+    Offset end,
+    Paint paint,
+  ) {
+    const steps = 64;
+    var drawing = true;
+    for (var i = 0; i < steps; i++) {
+      final a = i / steps;
+      final b = (i + 0.58) / steps;
+      if (drawing) {
+        canvas.drawLine(
+          _quadraticPoint(start, control, end, a),
+          _quadraticPoint(start, control, end, b.clamp(0.0, 1.0)),
+          paint,
+        );
+      }
+      drawing = !drawing;
     }
+  }
 
-    final totalDuration = sunset.difference(sunrise).inMinutes;
-    final elapsed = now.difference(sunrise).inMinutes;
-    double progress =
-        totalDuration > 0 ? elapsed / totalDuration : 0.0;
-    progress = progress.clamp(-0.2, 1.2);
+  void _drawProgressArc(
+    Canvas canvas,
+    Offset start,
+    Offset control,
+    Offset end,
+    double progress,
+    Paint paint,
+  ) {
+    if (progress <= 0) return;
+    final path = Path()..moveTo(start.dx, start.dy);
+    const steps = 48;
+    final count = (steps * progress).ceil().clamp(1, steps);
+    for (var i = 1; i <= count; i++) {
+      final t = (i / steps).clamp(0.0, progress);
+      final point = _quadraticPoint(start, control, end, t);
+      path.lineTo(point.dx, point.dy);
+    }
+    canvas.drawPath(path, paint);
+  }
 
-    final x = (progress * w).clamp(0.0, w);
-    final t = x / w;
-    final y =
-        baselineY - (1 - (2 * t - 1).abs() * (2 * t - 1).abs()) * h * 0.46;
-    canvas.drawCircle(Offset(x, y), 5.0, dotPaint);
+  Offset _quadraticPoint(Offset start, Offset control, Offset end, double t) {
+    final mt = 1 - t;
+    return Offset(
+      mt * mt * start.dx + 2 * mt * t * control.dx + t * t * end.dx,
+      mt * mt * start.dy + 2 * mt * t * control.dy + t * t * end.dy,
+    );
   }
 
   @override
   bool shouldRepaint(covariant _ArcPainter old) =>
-      old.now.minute != now.minute;
+      old.now.minute != now.minute ||
+      old.sunrise != sunrise ||
+      old.sunset != sunset;
 }

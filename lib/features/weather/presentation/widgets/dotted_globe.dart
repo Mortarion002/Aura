@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import '../../../../core/theme/colors.dart';
@@ -6,25 +6,28 @@ import '../../../../core/theme/colors.dart';
 class DottedGlobe extends StatelessWidget {
   final double latitude;
   final double longitude;
+  final double centerLongitude;
   final double size;
 
   const DottedGlobe({
     super.key,
     required this.latitude,
     required this.longitude,
+    double? centerLongitude,
     this.size = 300,
-  });
+  }) : centerLongitude = centerLongitude ?? longitude;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       label:
-          'Dotted world map showing latitude $latitude, longitude $longitude',
-      child: SizedBox(
-        width: size,
-        height: size * 1.12,
+          'Rotating dotted globe showing latitude $latitude, longitude $longitude',
+      child: SizedBox.square(
+        dimension: size,
         child: CustomPaint(
-          painter: _HalftoneMapPainter(
+          painter: _OrthographicGlobePainter(
+            centerLatitude: latitude,
+            centerLongitude: centerLongitude,
             pinLatitude: latitude,
             pinLongitude: longitude,
           ),
@@ -34,148 +37,232 @@ class DottedGlobe extends StatelessWidget {
   }
 }
 
-class _HalftoneMapPainter extends CustomPainter {
+class _OrthographicGlobePainter extends CustomPainter {
+  final double centerLatitude;
+  final double centerLongitude;
   final double pinLatitude;
   final double pinLongitude;
 
-  _HalftoneMapPainter({required this.pinLatitude, required this.pinLongitude});
+  const _OrthographicGlobePainter({
+    required this.centerLatitude,
+    required this.centerLongitude,
+    required this.pinLatitude,
+    required this.pinLongitude,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final mapRect = Rect.fromLTWH(
-      -size.width * 0.18,
-      size.height * 0.03,
-      size.width * 1.42,
-      size.height * 0.86,
-    );
+    final radius = size.shortestSide * 0.48;
+    final center = Offset(size.width / 2, size.height / 2);
+    final phi0 = _degToRad(centerLatitude);
+    final lam0 = _degToRad(_wrapLongitude(centerLongitude));
 
-    final landPaths = [
-      _scalePath(_northAmerica(), mapRect),
-      _scalePath(_centralAmerica(), mapRect),
-      _scalePath(_southAmerica(), mapRect),
-      _scalePath(_europeAfricaEdge(), mapRect),
-    ];
-
-    final dotPaint = Paint()
+    final seaPaint = Paint()
+      ..color = kMapGrey.withValues(alpha: 0.22)
+      ..style = PaintingStyle.fill;
+    final landPaint = Paint()
       ..color = kBlack.withValues(alpha: 0.78)
       ..style = PaintingStyle.fill;
 
-    const spacing = 5.35;
-    for (double y = mapRect.top; y < mapRect.bottom; y += spacing) {
-      final rowOffset = ((y / spacing).floor().isEven) ? 0.0 : spacing * 0.48;
-      for (
-        double x = mapRect.left + rowOffset;
-        x < mapRect.right;
-        x += spacing
-      ) {
-        final point = Offset(x, y);
-        if (_containsAny(landPaths, point)) {
-          final depthFade = (1 - ((x - size.width * 0.5).abs() / size.width))
-              .clamp(0.46, 1.0);
-          canvas.drawCircle(point, 1.18 * depthFade, dotPaint);
-        }
+    final clip = Path()
+      ..addOval(Rect.fromCircle(center: center, radius: radius));
+    canvas.save();
+    canvas.clipPath(clip);
+
+    for (double lat = -78; lat <= 78; lat += 4.6) {
+      final row = ((lat + 78) / 4.6).round();
+      final lonOffset = row.isEven ? 0.0 : 2.3;
+      for (double lon = -180 + lonOffset; lon <= 180; lon += 4.6) {
+        final projected = _project(
+          latitude: lat,
+          longitude: lon,
+          phi0: phi0,
+          lam0: lam0,
+          radius: radius,
+          center: center,
+        );
+        if (projected == null) continue;
+
+        final isLand = _isLand(lat, lon);
+        canvas.drawCircle(
+          projected,
+          isLand ? 2.2 : 1.2,
+          isLand ? landPaint : seaPaint,
+        );
       }
     }
 
-    final pin = _project(pinLatitude, pinLongitude, mapRect);
-    final haloPaint = Paint()
-      ..color = kOrange.withValues(alpha: 0.28)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(pin, 18, haloPaint);
-    canvas.drawCircle(pin, 9, Paint()..color = kOrange);
-    canvas.drawCircle(pin, 3.2, Paint()..color = kBlack);
+    canvas.restore();
+
+    final pin = _project(
+      latitude: pinLatitude,
+      longitude: pinLongitude,
+      phi0: phi0,
+      lam0: lam0,
+      radius: radius,
+      center: center,
+    );
+    if (pin != null) {
+      canvas.drawCircle(
+        pin,
+        12,
+        Paint()
+          ..color = kOrange.withValues(alpha: 0.18)
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawCircle(pin, 6, Paint()..color = kOrange);
+      canvas.drawCircle(pin, 3.2, Paint()..color = kBlack);
+    }
   }
 
-  bool _containsAny(List<Path> paths, Offset point) {
-    for (final path in paths) {
-      if (path.contains(point)) {
-        return true;
-      }
+  Offset? _project({
+    required double latitude,
+    required double longitude,
+    required double phi0,
+    required double lam0,
+    required double radius,
+    required Offset center,
+  }) {
+    final phi = _degToRad(latitude);
+    final lam = _degToRad(longitude);
+    final dl = lam - lam0;
+    final cosC =
+        math.sin(phi0) * math.sin(phi) +
+        math.cos(phi0) * math.cos(phi) * math.cos(dl);
+    if (cosC <= 0) return null;
+
+    final x = radius * math.cos(phi) * math.sin(dl);
+    final y =
+        -radius *
+        (math.cos(phi0) * math.sin(phi) -
+            math.sin(phi0) * math.cos(phi) * math.cos(dl));
+    return Offset(center.dx + x, center.dy + y);
+  }
+
+  bool _isLand(double latitude, double longitude) {
+    for (final polygon in _landPolygons) {
+      if (polygon.contains(latitude, longitude)) return true;
     }
     return false;
   }
 
-  Offset _project(double latitude, double longitude, Rect rect) {
-    const minLon = -170.0;
-    const maxLon = 60.0;
-    const maxLat = 74.0;
-    const minLat = -58.0;
+  double _degToRad(double degrees) => degrees * math.pi / 180;
 
-    final x = ((longitude - minLon) / (maxLon - minLon)).clamp(0.0, 1.0);
-    final y = ((maxLat - latitude) / (maxLat - minLat)).clamp(0.0, 1.0);
-    return Offset(rect.left + rect.width * x, rect.top + rect.height * y);
-  }
-
-  Path _northAmerica() {
-    return Path()
-      ..moveTo(0.02, 0.18)
-      ..quadraticBezierTo(0.12, 0.06, 0.34, 0.05)
-      ..quadraticBezierTo(0.56, 0.08, 0.69, 0.22)
-      ..quadraticBezierTo(0.61, 0.30, 0.67, 0.39)
-      ..quadraticBezierTo(0.56, 0.46, 0.43, 0.42)
-      ..quadraticBezierTo(0.34, 0.39, 0.28, 0.48)
-      ..quadraticBezierTo(0.18, 0.46, 0.12, 0.37)
-      ..quadraticBezierTo(0.02, 0.34, 0.02, 0.18)
-      ..close();
-  }
-
-  Path _centralAmerica() {
-    return Path()
-      ..moveTo(0.39, 0.45)
-      ..quadraticBezierTo(0.48, 0.44, 0.55, 0.50)
-      ..quadraticBezierTo(0.59, 0.55, 0.68, 0.55)
-      ..quadraticBezierTo(0.68, 0.59, 0.61, 0.60)
-      ..quadraticBezierTo(0.51, 0.57, 0.42, 0.52)
-      ..quadraticBezierTo(0.36, 0.49, 0.39, 0.45)
-      ..close();
-  }
-
-  Path _southAmerica() {
-    return Path()
-      ..moveTo(0.60, 0.57)
-      ..quadraticBezierTo(0.75, 0.57, 0.82, 0.70)
-      ..quadraticBezierTo(0.76, 0.84, 0.68, 0.98)
-      ..quadraticBezierTo(0.57, 0.86, 0.55, 0.72)
-      ..quadraticBezierTo(0.49, 0.63, 0.60, 0.57)
-      ..close();
-  }
-
-  Path _europeAfricaEdge() {
-    return Path()
-      ..moveTo(0.88, 0.20)
-      ..quadraticBezierTo(1.08, 0.14, 1.20, 0.28)
-      ..quadraticBezierTo(1.11, 0.43, 1.17, 0.58)
-      ..quadraticBezierTo(1.04, 0.67, 0.99, 0.82)
-      ..quadraticBezierTo(0.89, 0.69, 0.91, 0.49)
-      ..quadraticBezierTo(0.82, 0.36, 0.88, 0.20)
-      ..close();
-  }
-
-  Path _scalePath(Path source, Rect rect) {
-    final matrix = Float64List.fromList([
-      rect.width,
-      0,
-      0,
-      0,
-      0,
-      rect.height,
-      0,
-      0,
-      0,
-      0,
-      1,
-      0,
-      rect.left,
-      rect.top,
-      0,
-      1,
-    ]);
-    return source.transform(matrix);
+  double _wrapLongitude(double longitude) {
+    var wrapped = longitude % 360;
+    if (wrapped > 180) wrapped -= 360;
+    if (wrapped < -180) wrapped += 360;
+    return wrapped;
   }
 
   @override
-  bool shouldRepaint(covariant _HalftoneMapPainter oldDelegate) {
-    return oldDelegate.pinLatitude != pinLatitude ||
+  bool shouldRepaint(covariant _OrthographicGlobePainter oldDelegate) {
+    return oldDelegate.centerLatitude != centerLatitude ||
+        oldDelegate.centerLongitude != centerLongitude ||
+        oldDelegate.pinLatitude != pinLatitude ||
         oldDelegate.pinLongitude != pinLongitude;
   }
 }
+
+class _GeoPolygon {
+  final List<_GeoPoint> points;
+
+  const _GeoPolygon(this.points);
+
+  bool contains(double latitude, double longitude) {
+    var inside = false;
+    for (int i = 0, j = points.length - 1; i < points.length; j = i++) {
+      final pi = points[i];
+      final pj = points[j];
+      final intersects =
+          (pi.lon > longitude) != (pj.lon > longitude) &&
+          latitude <
+              (pj.lat - pi.lat) * (longitude - pi.lon) / (pj.lon - pi.lon) +
+                  pi.lat;
+      if (intersects) inside = !inside;
+    }
+    return inside;
+  }
+}
+
+class _GeoPoint {
+  final double lat;
+  final double lon;
+
+  const _GeoPoint(this.lat, this.lon);
+}
+
+const _landPolygons = [
+  _GeoPolygon([
+    _GeoPoint(72, -168),
+    _GeoPoint(70, -52),
+    _GeoPoint(54, -52),
+    _GeoPoint(45, -65),
+    _GeoPoint(28, -81),
+    _GeoPoint(14, -97),
+    _GeoPoint(21, -112),
+    _GeoPoint(32, -125),
+    _GeoPoint(52, -160),
+  ]),
+  _GeoPolygon([
+    _GeoPoint(18, -112),
+    _GeoPoint(24, -78),
+    _GeoPoint(8, -59),
+    _GeoPoint(-55, -69),
+    _GeoPoint(-54, -45),
+    _GeoPoint(-15, -35),
+    _GeoPoint(10, -48),
+    _GeoPoint(15, -86),
+  ]),
+  _GeoPolygon([
+    _GeoPoint(84, -58),
+    _GeoPoint(76, -18),
+    _GeoPoint(60, -18),
+    _GeoPoint(58, -52),
+    _GeoPoint(70, -72),
+  ]),
+  _GeoPolygon([
+    _GeoPoint(72, -12),
+    _GeoPoint(70, 42),
+    _GeoPoint(48, 50),
+    _GeoPoint(36, 31),
+    _GeoPoint(35, -10),
+    _GeoPoint(50, -24),
+  ]),
+  _GeoPolygon([
+    _GeoPoint(36, -18),
+    _GeoPoint(32, 52),
+    _GeoPoint(-34, 51),
+    _GeoPoint(-35, 18),
+    _GeoPoint(-18, 8),
+    _GeoPoint(-4, -15),
+  ]),
+  _GeoPolygon([
+    _GeoPoint(72, 32),
+    _GeoPoint(70, 178),
+    _GeoPoint(48, 176),
+    _GeoPoint(8, 124),
+    _GeoPoint(-8, 100),
+    _GeoPoint(18, 72),
+    _GeoPoint(30, 42),
+  ]),
+  _GeoPolygon([
+    _GeoPoint(8, 96),
+    _GeoPoint(22, 122),
+    _GeoPoint(4, 146),
+    _GeoPoint(-11, 132),
+    _GeoPoint(-8, 104),
+  ]),
+  _GeoPolygon([
+    _GeoPoint(-10, 112),
+    _GeoPoint(-11, 154),
+    _GeoPoint(-44, 154),
+    _GeoPoint(-44, 112),
+  ]),
+  _GeoPolygon([
+    _GeoPoint(-66, -180),
+    _GeoPoint(-66, 180),
+    _GeoPoint(-82, 180),
+    _GeoPoint(-82, -180),
+  ]),
+];
