@@ -1,6 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/models/city_model.dart';
-import '../../../core/utils/timezone_utils.dart';
 import 'clock_provider.dart';
 
 part 'world_clock_provider.g.dart';
@@ -8,7 +7,8 @@ part 'world_clock_provider.g.dart';
 @riverpod
 Map<CityModel, DateTime> worldClockTimes(WorldClockTimesRef ref) {
   final savedCities = ref.watch(savedCitiesProvider);
-  final ticker = ref.watch(clockTickerProvider);
+  // Watch the ticker to trigger rebuilds every second
+  ref.watch(clockTickerProvider);
 
   final Map<CityModel, DateTime> times = {};
   

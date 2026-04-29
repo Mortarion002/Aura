@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'core/theme/colors.dart';
 import 'core/widgets/bottom_nav_bar.dart';
 import 'core/widgets/orange_border_scaffold.dart';
 import 'features/clock/presentation/clock_screen.dart';

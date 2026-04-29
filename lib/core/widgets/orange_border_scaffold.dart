@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
 
 class OrangeBorderScaffold extends StatelessWidget {
   final Widget body;

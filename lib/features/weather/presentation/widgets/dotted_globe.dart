@@ -16,13 +16,16 @@ class DottedGlobe extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(
-        painter: _DottedGlobePainter(
-          pinLatitude: latitude,
-          pinLongitude: longitude,
+    return Semantics(
+      label: 'Interactive globe showing location at latitude $latitude, longitude $longitude',
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: CustomPaint(
+          painter: _DottedGlobePainter(
+            pinLatitude: latitude,
+            pinLongitude: longitude,
+          ),
         ),
       ),
     );

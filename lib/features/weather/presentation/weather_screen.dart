@@ -7,7 +7,6 @@ import '../../../core/utils/date_formatter.dart';
 import '../../../core/utils/temp_formatter.dart';
 import '../../../core/widgets/orange_border_scaffold.dart';
 import '../../../core/widgets/retry_error_card.dart';
-import '../../../core/widgets/top_app_bar.dart';
 import '../../../core/storage/unit_provider.dart';
 import 'providers/weather_provider.dart';
 import 'widgets/dotted_globe.dart';
@@ -104,7 +103,27 @@ class WeatherScreen extends ConsumerWidget {
                   onVerticalDragEnd: (details) {
                     if (details.primaryVelocity != null && details.primaryVelocity! < 0) {
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ForecastScreen()),
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => const ForecastScreen(),
+                          transitionsBuilder: (_, animation, __, child) {
+                            final slideIn = Tween<Offset>(
+                              begin: const Offset(0, 1),
+                              end: Offset.zero,
+                            ).animate(CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutCubic,
+                            ));
+                            return SlideTransition(
+                              position: slideIn,
+                              child: FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              ),
+                            );
+                          },
+                          transitionDuration: const Duration(milliseconds: 500),
+                          reverseTransitionDuration: const Duration(milliseconds: 400),
+                        ),
                       );
                     }
                   },

@@ -43,21 +43,26 @@ class Toggle1224 extends StatelessWidget {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: isSelected ? kBlack : Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Text(
-          text,
-          style: AppTextStyles.labelSmall.copyWith(
-            color: isSelected ? Colors.white : kTextPrimary,
-            fontWeight: isSelected ? FontWeight.w500 : FontWeight.w300,
+    return Semantics(
+      label: '$text format${isSelected ? ', selected' : ''}',
+      button: true,
+      selected: isSelected,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected ? kBlack : Colors.transparent,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Text(
+            text,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: isSelected ? Colors.white : kBlack,
+              fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+            ),
           ),
         ),
       ),
