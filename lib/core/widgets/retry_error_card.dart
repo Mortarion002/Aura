@@ -20,7 +20,7 @@ class RetryErrorCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: kCardLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: kOrange.withOpacity(0.3)),
+        border: Border.all(color: kOrange.withValues(alpha: 0.3)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

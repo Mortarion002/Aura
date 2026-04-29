@@ -2,7 +2,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/models/city_model.dart';
 import '../../../weather/presentation/providers/weather_provider.dart';
-import '../../data/geocoding_model.dart';
 import '../../data/location_repository.dart';
 
 part 'geocoding_provider.g.dart';

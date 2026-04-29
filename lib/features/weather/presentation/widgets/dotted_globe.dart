@@ -44,7 +44,7 @@ class _DottedGlobePainter extends CustomPainter {
     final radius = size.width / 2;
 
     final dotPaint = Paint()
-      ..color = kTextSecond.withOpacity(0.3)
+      ..color = kTextSecond.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
 
     final pinPaint = Paint()
@@ -108,7 +108,7 @@ class _DottedGlobePainter extends CustomPainter {
       
       // Pin outer ring
       final ringPaint = Paint()
-        ..color = kOrange.withOpacity(0.3)
+        ..color = kOrange.withValues(alpha: 0.3)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0;
       canvas.drawCircle(Offset(screenX, screenY), 12.0, ringPaint);

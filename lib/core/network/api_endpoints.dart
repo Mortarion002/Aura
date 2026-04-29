@@ -4,9 +4,8 @@ class ApiEndpoints {
   static const String baseUrl = 'https://api.openweathermap.org';
 
   // ─── OpenWeatherMap Free Tier (2.5) ───────────────────────────────────────
-  // Get your free key at: https://openweathermap.org/api
-  // Paste it below, then add this file to .gitignore if you go public.
-  static const String apiKey = '461f04d9d3dd371598af3f098e5a1dcd';
+  // Run the app with: flutter run --dart-define=API_KEY=your_actual_key
+  static const String apiKey = String.fromEnvironment('API_KEY', defaultValue: '');
 
   // Current weather — by city name or by lat/lon
   static const String currentWeather = '/data/2.5/weather';

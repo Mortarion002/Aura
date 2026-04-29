@@ -22,7 +22,6 @@ class DrumClock extends StatelessWidget {
     
     final formattedHours = hours.toString().padLeft(2, '0');
     final formattedMinutes = time.minute.toString().padLeft(2, '0');
-    final formattedSeconds = time.second.toString().padLeft(2, '0');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

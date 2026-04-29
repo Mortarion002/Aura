@@ -66,7 +66,7 @@ class _MapGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = kTextSecond.withOpacity(0.2)
+      ..color = kTextSecond.withValues(alpha: 0.2)
       ..strokeWidth = 1.0;
 
     // Draw horizontal grid lines

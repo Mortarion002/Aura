@@ -48,7 +48,7 @@ class CityTimeCard extends ConsumerWidget {
           boxShadow: [
             if (isActive)
               BoxShadow(
-                color: kOrange.withOpacity(0.3),
+                color: kOrange.withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               )
@@ -73,7 +73,7 @@ class CityTimeCard extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isActive ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                    color: isActive ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
