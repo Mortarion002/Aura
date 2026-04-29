@@ -25,16 +25,16 @@ class CityTimeCard extends ConsumerWidget {
     int hours = time.hour;
     if (!is24Hour) {
       hours = hours % 12;
-      if (hours == 0) hours = 12;
+      if (hours == 0) {
+        hours = 12;
+      }
     }
 
     final formattedTime =
         '${hours.toString().padLeft(2, '0')}:'
         '${time.minute.toString().padLeft(2, '0')}:'
         '${time.second.toString().padLeft(2, '0')}';
-
     final isDay = TimezoneUtils.isDaytime(time);
-    final emoji = isDay ? '☀️' : '🌙';
 
     return GestureDetector(
       onTap: () {
@@ -42,18 +42,10 @@ class CityTimeCard extends ConsumerWidget {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
         decoration: BoxDecoration(
-          color: isActive ? kBlack : kCardLight,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            if (isActive)
-              BoxShadow(
-                color: kOrange.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-          ],
+          color: isActive ? kBlack : kPanelGrey,
+          borderRadius: BorderRadius.circular(26),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,43 +58,73 @@ class CityTimeCard extends ConsumerWidget {
                     city.name,
                     style: AppTextStyles.cardCity.copyWith(
                       color: isActive ? Colors.white : kTextPrimary,
+                      fontSize: 15,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : Colors.black.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    TimezoneUtils.formatOffset(city.timezoneOffsetSeconds),
-                    style: AppTextStyles.cardUtc.copyWith(
-                      color: isActive ? Colors.white70 : kTextSecond,
-                    ),
+                Text(
+                  _formatUtc(city.timezoneOffsetSeconds),
+                  style: AppTextStyles.cardUtc.copyWith(
+                    fontSize: 11,
+                    color: isActive ? Colors.white54 : kTextSecond,
                   ),
                 ),
               ],
             ),
             const Spacer(),
-            Text(emoji, style: const TextStyle(fontSize: 24)),
-            const SizedBox(height: 8),
-            Text(
-              formattedTime,
-              style: AppTextStyles.cardTime.copyWith(
-                color: isActive ? Colors.white : kTextPrimary,
+            Row(
+              children: [
+                Text(
+                  isDay ? 'Day' : 'Night',
+                  style: AppTextStyles.cardUtc.copyWith(
+                    fontSize: 13,
+                    color: isActive ? Colors.white54 : kTextSecond,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Icon(
+                  isDay ? Icons.wb_sunny : Icons.brightness_2,
+                  color: isDay ? kOrange : const Color(0xFFF5C84C),
+                  size: 16,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                formattedTime,
+                style: AppTextStyles.cardTime.copyWith(
+                  color: isActive ? Colors.white : kTextPrimary,
+                  fontSize: 36,
+                  height: 1,
+                ),
+                maxLines: 1,
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _formatUtc(int offsetSeconds) {
+    if (offsetSeconds == 0) {
+      return 'UTC 0';
+    }
+
+    final sign = offsetSeconds < 0 ? '-' : '+';
+    final absOffset = offsetSeconds.abs();
+    final hours = absOffset ~/ 3600;
+    final minutes = (absOffset % 3600) ~/ 60;
+
+    if (minutes == 0) {
+      return 'UTC $sign$hours';
+    }
+
+    return 'UTC $sign$hours:${minutes.toString().padLeft(2, '0')}';
   }
 }
