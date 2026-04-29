@@ -6,9 +6,26 @@ import '../../../core/widgets/top_app_bar.dart';
 import '../providers/clock_provider.dart';
 import 'widgets/compass_strip.dart';
 import 'widgets/drum_clock.dart';
+import 'world_clock_screen.dart';
 
 class ClockScreen extends ConsumerWidget {
   const ClockScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return PageView(
+      scrollDirection: Axis.vertical,
+      physics: const BouncingScrollPhysics(),
+      children: const [
+        _DrumClockView(),
+        WorldClockScreen(),
+      ],
+    );
+  }
+}
+
+class _DrumClockView extends ConsumerWidget {
+  const _DrumClockView();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
