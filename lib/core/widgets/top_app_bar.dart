@@ -29,14 +29,10 @@ class TopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 letterSpacing: 2,
               ),
             ),
-            
+
             // Dot-grid menu
-            const Icon(
-              Symbols.apps,
-              color: kBlack,
-              size: 28,
-            ),
-            
+            const Icon(Symbols.apps, color: kBlack, size: 28),
+
             // 12h/24h toggle
             Toggle1224(
               is24Hour: is24Hour,

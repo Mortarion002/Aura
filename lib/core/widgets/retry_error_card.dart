@@ -27,10 +27,7 @@ class RetryErrorCard extends StatelessWidget {
         children: [
           const Icon(Icons.error_outline, color: kOrange, size: 48),
           const SizedBox(height: 16),
-          Text(
-            'Something went wrong',
-            style: AppTextStyles.cardCity,
-          ),
+          Text('Something went wrong', style: AppTextStyles.cardCity),
           const SizedBox(height: 8),
           Text(
             message,
@@ -50,7 +47,10 @@ class RetryErrorCard extends StatelessWidget {
             ),
             child: Text(
               'Retry',
-              style: AppTextStyles.cardCity.copyWith(color: Colors.white, fontSize: 14),
+              style: AppTextStyles.cardCity.copyWith(
+                color: Colors.white,
+                fontSize: 14,
+              ),
             ),
           ),
         ],

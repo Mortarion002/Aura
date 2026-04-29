@@ -16,36 +16,41 @@ class WeatherRepository {
         ApiEndpoints.currentWeather,
         queryParameters: {'q': cityName},
       );
-      return _toWeatherEntity(CurrentWeatherModel.fromJson(response.data as Map<String, dynamic>));
+      return _toWeatherEntity(
+        CurrentWeatherModel.fromJson(response.data as Map<String, dynamic>),
+      );
     } on DioException catch (e) {
       throw mapDioException(e);
     }
   }
 
-  Future<WeatherEntity> getCurrentWeatherByCoords(double lat, double lon) async {
+  Future<WeatherEntity> getCurrentWeatherByCoords(
+    double lat,
+    double lon,
+  ) async {
     try {
       final response = await _dio.get(
         ApiEndpoints.currentWeather,
         queryParameters: {'lat': lat, 'lon': lon},
       );
-      return _toWeatherEntity(CurrentWeatherModel.fromJson(response.data as Map<String, dynamic>));
+      return _toWeatherEntity(
+        CurrentWeatherModel.fromJson(response.data as Map<String, dynamic>),
+      );
     } on DioException catch (e) {
       throw mapDioException(e);
     }
   }
 
-  Future<
-    ({
-      List<HourlyForecastEntity> hourly,
-      List<DailyForecastEntity> daily,
-    })
-  > getForecast(String cityName) async {
+  Future<({List<HourlyForecastEntity> hourly, List<DailyForecastEntity> daily})>
+  getForecast(String cityName) async {
     try {
       final response = await _dio.get(
         ApiEndpoints.forecast,
         queryParameters: {'q': cityName, 'cnt': 40},
       );
-      final model = ForecastResponseModel.fromJson(response.data as Map<String, dynamic>);
+      final model = ForecastResponseModel.fromJson(
+        response.data as Map<String, dynamic>,
+      );
       return (
         hourly: _toHourlyEntities(model.list),
         daily: _toDailyEntities(model.list),

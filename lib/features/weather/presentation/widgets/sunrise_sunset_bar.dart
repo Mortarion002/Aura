@@ -13,7 +13,9 @@ class SunriseSunsetBar extends StatelessWidget {
   });
 
   String _formatTime(DateTime time) {
-    final hour = time.hour > 12 ? time.hour - 12 : (time.hour == 0 ? 12 : time.hour);
+    final hour = time.hour > 12
+        ? time.hour - 12
+        : (time.hour == 0 ? 12 : time.hour);
     final minute = time.minute.toString().padLeft(2, '0');
     final period = time.hour >= 12 ? 'PM' : 'AM';
     return '$hour:$minute $period';
@@ -57,14 +59,21 @@ class SunriseSunsetBar extends StatelessWidget {
     );
   }
 
-  Widget _buildInfo({required IconData icon, required String time, required Color color}) {
+  Widget _buildInfo({
+    required IconData icon,
+    required String time,
+    required Color color,
+  }) {
     return Row(
       children: [
         Icon(icon, color: color, size: 20),
         const SizedBox(width: 8),
         Text(
           time.toLowerCase(),
-          style: AppTextStyles.cardCity.copyWith(fontSize: 14, color: kTextSecond),
+          style: AppTextStyles.cardCity.copyWith(
+            fontSize: 14,
+            color: kTextSecond,
+          ),
         ),
       ],
     );
@@ -97,7 +106,7 @@ class _ArcPainter extends CustomPainter {
       double t = i / dotCount;
       double x = t * w;
       // Arc formula: y = h - sin(t * pi) * h
-      double y = h - (1 - (2 * t - 1).abs() * (2 * t - 1).abs()) * h * 0.8; 
+      double y = h - (1 - (2 * t - 1).abs() * (2 * t - 1).abs()) * h * 0.8;
       canvas.drawCircle(Offset(x, y), 1.5, paint);
     }
 

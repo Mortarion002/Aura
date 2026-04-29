@@ -13,7 +13,8 @@ class CompassStrip extends ConsumerWidget {
     final activeCity = ref.watch(activeCityProvider);
 
     // Sort cities by longitude
-    final sortedCities = [...savedCities]..sort((a, b) => a.lon.compareTo(b.lon));
+    final sortedCities = [...savedCities]
+      ..sort((a, b) => a.lon.compareTo(b.lon));
 
     return SizedBox(
       height: 80,

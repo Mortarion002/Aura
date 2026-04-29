@@ -13,5 +13,6 @@ abstract class CityModel with _$CityModel {
     required int timezoneOffsetSeconds,
   }) = _CityModel;
 
-  factory CityModel.fromJson(Map<String, dynamic> json) => _$CityModelFromJson(json);
+  factory CityModel.fromJson(Map<String, dynamic> json) =>
+      _$CityModelFromJson(json);
 }

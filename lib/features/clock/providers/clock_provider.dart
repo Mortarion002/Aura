@@ -89,12 +89,15 @@ class Is24HourFormat extends _$Is24HourFormat {
 DateTime currentCityTime(CurrentCityTimeRef ref) {
   final activeCity = ref.watch(activeCityProvider);
   final ticker = ref.watch(clockTickerProvider);
-  
+
   // We use the ticker to trigger rebuilds every second, but calculate time
   // based on the active city's offset.
   return ticker.when(
-    data: (_) => TimezoneUtils.getLocalTimeForOffset(activeCity.timezoneOffsetSeconds),
-    loading: () => TimezoneUtils.getLocalTimeForOffset(activeCity.timezoneOffsetSeconds),
-    error: (_, __) => TimezoneUtils.getLocalTimeForOffset(activeCity.timezoneOffsetSeconds),
+    data: (time) =>
+        TimezoneUtils.getLocalTimeForOffset(activeCity.timezoneOffsetSeconds),
+    loading: () =>
+        TimezoneUtils.getLocalTimeForOffset(activeCity.timezoneOffsetSeconds),
+    error: (error, stackTrace) =>
+        TimezoneUtils.getLocalTimeForOffset(activeCity.timezoneOffsetSeconds),
   );
 }

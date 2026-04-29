@@ -23,9 +23,7 @@ class ForecastScreen extends ConsumerWidget {
       body: Column(
         children: [
           _buildHeader(context, activeCity.name),
-          Expanded(
-            child: _buildForecastContent(context, ref, activeCity.name),
-          ),
+          Expanded(child: _buildForecastContent(context, ref, activeCity.name)),
         ],
       ),
     );
@@ -56,7 +54,11 @@ class ForecastScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildForecastContent(BuildContext context, WidgetRef ref, String cityName) {
+  Widget _buildForecastContent(
+    BuildContext context,
+    WidgetRef ref,
+    String cityName,
+  ) {
     final forecastAsync = ref.watch(forecastProvider(cityName));
     final unit = ref.watch(temperatureUnitProvider);
 
@@ -64,19 +66,14 @@ class ForecastScreen extends ConsumerWidget {
       data: (data) {
         return CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(
-              child: _buildHourlyStrip(data.hourly, unit),
-            ),
+            SliverToBoxAdapter(child: _buildHourlyStrip(data.hourly, unit)),
             SliverPadding(
               padding: const EdgeInsets.all(24.0),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final day = data.daily[index];
-                    return _buildDailyRow(day, unit);
-                  },
-                  childCount: data.daily.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final day = data.daily[index];
+                  return _buildDailyRow(day, unit);
+                }, childCount: data.daily.length),
               ),
             ),
           ],
@@ -117,7 +114,10 @@ class ForecastScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 Icon(
-                  WeatherIconMapper.iconFor(hour.conditionId, isDay: true), // Assuming day for simplicity or calculate based on time
+                  WeatherIconMapper.iconFor(
+                    hour.conditionId,
+                    isDay: true,
+                  ), // Assuming day for simplicity or calculate based on time
                   color: WeatherIconMapper.colorFor(hour.conditionId),
                   size: 28,
                 ),

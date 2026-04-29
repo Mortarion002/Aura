@@ -9,10 +9,7 @@ class LocationRepository {
   Future<List<GeocodingResultModel>> searchCity(String query) async {
     final response = await _dio.get(
       ApiEndpoints.geocoding,
-      queryParameters: {
-        'q': query,
-        'limit': ApiEndpoints.geocodeLimit,
-      },
+      queryParameters: {'q': query, 'limit': ApiEndpoints.geocodeLimit},
     );
     final list = response.data as List<dynamic>;
     return list

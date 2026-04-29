@@ -101,35 +101,42 @@ class _AddCityModalState extends ConsumerState<AddCityModal> {
                 if (cities.isEmpty) {
                   return Center(
                     child: Text(
-                      _query.isEmpty ? 'Type to search for a city' : 'No results found',
-                      style: AppTextStyles.labelSmall.copyWith(color: kTextSecond),
+                      _query.isEmpty
+                          ? 'Type to search for a city'
+                          : 'No results found',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: kTextSecond,
+                      ),
                     ),
                   );
                 }
                 return ListView.separated(
                   physics: const BouncingScrollPhysics(),
                   itemCount: cities.length,
-                  separatorBuilder: (context, index) => const Divider(color: Colors.black12, height: 1),
+                  separatorBuilder: (context, index) =>
+                      const Divider(color: Colors.black12, height: 1),
                   itemBuilder: (context, index) {
                     final city = cities[index];
                     return ListTile(
                       contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                      title: Text(
-                        city.name,
-                        style: AppTextStyles.cardCity,
-                      ),
+                      title: Text(city.name, style: AppTextStyles.cardCity),
                       subtitle: Text(
                         city.country,
                         style: AppTextStyles.labelSmall,
                       ),
                       trailing: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          TimezoneUtils.formatOffset(city.timezoneOffsetSeconds),
+                          TimezoneUtils.formatOffset(
+                            city.timezoneOffsetSeconds,
+                          ),
                           style: AppTextStyles.cardUtc,
                         ),
                       ),

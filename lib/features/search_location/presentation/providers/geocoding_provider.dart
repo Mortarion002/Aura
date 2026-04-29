@@ -29,32 +29,37 @@ Future<List<CityModel>> geocodingSearch(
 
   final repository = ref.watch(locationRepositoryProvider);
   final weatherRepo = ref.watch(weatherRepositoryProvider);
-  
+
   final geocodeResults = await repository.searchCity(query);
-  
+
   if (didDispose) throw Exception('Cancelled');
 
   // Fetch current weather for each to get the timezone offset
-  final cityModels = await Future.wait(geocodeResults.map((geo) async {
-    try {
-      final weatherResponse = await weatherRepo.getCurrentWeatherByCoords(geo.lat, geo.lon);
-      return CityModel(
-        name: geo.name,
-        country: geo.country,
-        lat: geo.lat,
-        lon: geo.lon,
-        timezoneOffsetSeconds: weatherResponse.timezoneOffsetSeconds,
-      );
-    } catch (_) {
-      return CityModel(
-        name: geo.name,
-        country: geo.country,
-        lat: geo.lat,
-        lon: geo.lon,
-        timezoneOffsetSeconds: 0,
-      );
-    }
-  }));
+  final cityModels = await Future.wait(
+    geocodeResults.map((geo) async {
+      try {
+        final weatherResponse = await weatherRepo.getCurrentWeatherByCoords(
+          geo.lat,
+          geo.lon,
+        );
+        return CityModel(
+          name: geo.name,
+          country: geo.country,
+          lat: geo.lat,
+          lon: geo.lon,
+          timezoneOffsetSeconds: weatherResponse.timezoneOffsetSeconds,
+        );
+      } catch (_) {
+        return CityModel(
+          name: geo.name,
+          country: geo.country,
+          lat: geo.lat,
+          lon: geo.lon,
+          timezoneOffsetSeconds: 0,
+        );
+      }
+    }),
+  );
 
   return cityModels;
 }

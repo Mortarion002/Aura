@@ -28,10 +28,11 @@ class CityTimeCard extends ConsumerWidget {
       if (hours == 0) hours = 12;
     }
 
-    final formattedTime = '${hours.toString().padLeft(2, '0')}:'
+    final formattedTime =
+        '${hours.toString().padLeft(2, '0')}:'
         '${time.minute.toString().padLeft(2, '0')}:'
         '${time.second.toString().padLeft(2, '0')}';
-    
+
     final isDay = TimezoneUtils.isDaytime(time);
     final emoji = isDay ? '☀️' : '🌙';
 
@@ -51,7 +52,7 @@ class CityTimeCard extends ConsumerWidget {
                 color: kOrange.withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
-              )
+              ),
           ],
         ),
         child: Column(
@@ -71,9 +72,14 @@ class CityTimeCard extends ConsumerWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: isActive ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                    color: isActive
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -86,10 +92,7 @@ class CityTimeCard extends ConsumerWidget {
               ],
             ),
             const Spacer(),
-            Text(
-              emoji,
-              style: const TextStyle(fontSize: 24),
-            ),
+            Text(emoji, style: const TextStyle(fontSize: 24)),
             const SizedBox(height: 8),
             Text(
               formattedTime,

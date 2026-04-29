@@ -26,7 +26,11 @@ class WeatherScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildWeatherContent(BuildContext context, WidgetRef ref, String cityName) {
+  Widget _buildWeatherContent(
+    BuildContext context,
+    WidgetRef ref,
+    String cityName,
+  ) {
     final weatherAsync = ref.watch(currentWeatherProvider(cityName));
     final unit = ref.watch(temperatureUnitProvider);
 
@@ -50,7 +54,10 @@ class WeatherScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 16.0,
+                  ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -62,15 +69,22 @@ class WeatherScreen extends ConsumerWidget {
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.token, size: 32), // Placeholder logo
+                                const Icon(
+                                  Icons.token,
+                                  size: 32,
+                                ), // Placeholder logo
                                 const SizedBox(width: 48),
                                 const Icon(Icons.apps, size: 28),
                               ],
                             ),
                             const SizedBox(height: 48),
                             Text(
-                              DateFormatter.dayAndDate(DateTime.now()).replaceFirst(' ', ',\n'),
-                              style: AppTextStyles.cardCity.copyWith(height: 1.3),
+                              DateFormatter.dayAndDate(
+                                DateTime.now(),
+                              ).replaceFirst(' ', ',\n'),
+                              style: AppTextStyles.cardCity.copyWith(
+                                height: 1.3,
+                              ),
                             ),
                           ],
                         ),
@@ -101,28 +115,37 @@ class WeatherScreen extends ConsumerWidget {
                 const Spacer(),
                 GestureDetector(
                   onVerticalDragEnd: (details) {
-                    if (details.primaryVelocity != null && details.primaryVelocity! < 0) {
+                    if (details.primaryVelocity != null &&
+                        details.primaryVelocity! < 0) {
                       Navigator.of(context).push(
                         PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => const ForecastScreen(),
-                          transitionsBuilder: (_, animation, __, child) {
-                            final slideIn = Tween<Offset>(
-                              begin: const Offset(0, 1),
-                              end: Offset.zero,
-                            ).animate(CurvedAnimation(
-                              parent: animation,
-                              curve: Curves.easeOutCubic,
-                            ));
-                            return SlideTransition(
-                              position: slideIn,
-                              child: FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              ),
-                            );
-                          },
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const ForecastScreen(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                                final slideIn =
+                                    Tween<Offset>(
+                                      begin: const Offset(0, 1),
+                                      end: Offset.zero,
+                                    ).animate(
+                                      CurvedAnimation(
+                                        parent: animation,
+                                        curve: Curves.easeOutCubic,
+                                      ),
+                                    );
+                                return SlideTransition(
+                                  position: slideIn,
+                                  child: FadeTransition(
+                                    opacity: animation,
+                                    child: child,
+                                  ),
+                                );
+                              },
                           transitionDuration: const Duration(milliseconds: 500),
-                          reverseTransitionDuration: const Duration(milliseconds: 400),
+                          reverseTransitionDuration: const Duration(
+                            milliseconds: 400,
+                          ),
                         ),
                       );
                     }
@@ -130,13 +153,20 @@ class WeatherScreen extends ConsumerWidget {
                   child: Column(
                     children: [
                       const Icon(Icons.keyboard_arrow_up, color: kTextSecond),
-                      Text('Swipe for forecast', style: AppTextStyles.labelSmall.copyWith(color: kTextSecond)),
+                      Text(
+                        'Swipe for forecast',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: kTextSecond,
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       SunriseSunsetBar(
                         sunrise: weather.sunrise,
                         sunset: weather.sunset,
                       ),
-                      const SizedBox(height: 120), // Prevents overlap with Bottom Nav Bar
+                      const SizedBox(
+                        height: 120,
+                      ), // Prevents overlap with Bottom Nav Bar
                     ],
                   ),
                 ),
@@ -175,20 +205,15 @@ class WeatherScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 8.0,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      width: 120,
-                      height: 24,
-                      color: Colors.white,
-                    ),
-                    Container(
-                      width: 100,
-                      height: 96,
-                      color: Colors.white,
-                    ),
+                    Container(width: 120, height: 24, color: Colors.white),
+                    Container(width: 100, height: 96, color: Colors.white),
                   ],
                 ),
               ),
@@ -198,16 +223,8 @@ class WeatherScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      width: 100,
-                      height: 48,
-                      color: Colors.white,
-                    ),
-                    Container(
-                      width: 100,
-                      height: 48,
-                      color: Colors.white,
-                    ),
+                    Container(width: 100, height: 48, color: Colors.white),
+                    Container(width: 100, height: 48, color: Colors.white),
                   ],
                 ),
               ),

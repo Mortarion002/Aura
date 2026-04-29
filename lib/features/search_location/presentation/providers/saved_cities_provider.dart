@@ -21,7 +21,10 @@ LocationRepository locationRepository(LocationRepositoryRef ref) {
 class SavedCities extends _$SavedCities {
   @override
   List<String> build() {
-    return ref.watch(sharedPreferencesProvider).getStringList(_savedCitiesKey) ?? [];
+    return ref
+            .watch(sharedPreferencesProvider)
+            .getStringList(_savedCitiesKey) ??
+        [];
   }
 
   void add(String cityName) {

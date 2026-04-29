@@ -13,14 +13,24 @@ void main() {
 
       test('adds positive offset correctly (UTC+5:30 = 19800s)', () {
         final result = TimezoneUtils.getLocalTimeForOffset(19800);
-        final expected = DateTime.now().toUtc().add(const Duration(seconds: 19800));
-        expect(result.difference(expected).inSeconds.abs(), lessThanOrEqualTo(1));
+        final expected = DateTime.now().toUtc().add(
+          const Duration(seconds: 19800),
+        );
+        expect(
+          result.difference(expected).inSeconds.abs(),
+          lessThanOrEqualTo(1),
+        );
       });
 
       test('subtracts negative offset correctly (UTC-5 = -18000s)', () {
         final result = TimezoneUtils.getLocalTimeForOffset(-18000);
-        final expected = DateTime.now().toUtc().add(const Duration(seconds: -18000));
-        expect(result.difference(expected).inSeconds.abs(), lessThanOrEqualTo(1));
+        final expected = DateTime.now().toUtc().add(
+          const Duration(seconds: -18000),
+        );
+        expect(
+          result.difference(expected).inSeconds.abs(),
+          lessThanOrEqualTo(1),
+        );
       });
     });
 

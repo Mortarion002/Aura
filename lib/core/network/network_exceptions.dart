@@ -12,26 +12,28 @@ sealed class NetworkException implements Exception {
 
 final class CityNotFoundException extends NetworkException {
   const CityNotFoundException()
-      : super('City not found. Please check the name and try again.');
+    : super('City not found. Please check the name and try again.');
 }
 
 final class NoInternetException extends NetworkException {
   const NoInternetException()
-      : super('No internet connection. Please check your network.');
+    : super('No internet connection. Please check your network.');
 }
 
 final class RequestTimeoutException extends NetworkException {
   const RequestTimeoutException()
-      : super('Request timed out. Please try again.');
+    : super('Request timed out. Please try again.');
 }
 
 final class InvalidApiKeyException extends NetworkException {
   const InvalidApiKeyException()
-      : super('Invalid API key. Please check your OpenWeatherMap key.');
+    : super('Invalid API key. Please check your OpenWeatherMap key.');
 }
 
 final class ServerException extends NetworkException {
-  const ServerException([super.message = 'Server error. Please try again later.']);
+  const ServerException([
+    super.message = 'Server error. Please try again later.',
+  ]);
 }
 
 final class UnknownException extends NetworkException {

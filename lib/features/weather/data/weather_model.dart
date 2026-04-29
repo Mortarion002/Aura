@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+// ignore_for_file: invalid_annotation_target
+
 part 'weather_model.freezed.dart';
 part 'weather_model.g.dart';
 
@@ -7,10 +9,8 @@ part 'weather_model.g.dart';
 
 @freezed
 abstract class CoordModel with _$CoordModel {
-  const factory CoordModel({
-    required double lat,
-    required double lon,
-  }) = _CoordModel;
+  const factory CoordModel({required double lat, required double lon}) =
+      _CoordModel;
 
   factory CoordModel.fromJson(Map<String, dynamic> json) =>
       _$CoordModelFromJson(json);
@@ -58,9 +58,7 @@ abstract class WindModel with _$WindModel {
 
 @freezed
 abstract class CloudsModel with _$CloudsModel {
-  const factory CloudsModel({
-    required int all,
-  }) = _CloudsModel;
+  const factory CloudsModel({required int all}) = _CloudsModel;
 
   factory CloudsModel.fromJson(Map<String, dynamic> json) =>
       _$CloudsModelFromJson(json);

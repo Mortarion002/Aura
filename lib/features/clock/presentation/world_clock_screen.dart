@@ -42,18 +42,19 @@ class WorldClockScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 16),
-                  
+
                   // 2x2 Grid (or scrollable list if more)
                   Expanded(
                     flex: 3,
                     child: GridView.builder(
                       physics: const BouncingScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 0.8,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 0.8,
+                          ),
                       itemCount: citiesList.length,
                       itemBuilder: (context, index) {
                         final entry = citiesList[index];
@@ -66,15 +67,16 @@ class WorldClockScreen extends ConsumerWidget {
                       },
                     ),
                   ),
-                  
+
                   // World Map
                   Expanded(
                     flex: 2,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 24.0, bottom: 120.0), // Room for bottom nav
-                      child: WorldMapSvg(
-                        activeLongitude: activeCity.lon,
-                      ),
+                      padding: const EdgeInsets.only(
+                        top: 24.0,
+                        bottom: 120.0,
+                      ), // Room for bottom nav
+                      child: WorldMapSvg(activeLongitude: activeCity.lon),
                     ),
                   ),
                 ],

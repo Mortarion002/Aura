@@ -15,21 +15,17 @@ class OrangeBorderScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor:
+          backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
-            colors: [
-              Color(0xFFEFEBE0), // Warmer tan top-right
-              Color(0xFFDFD1B8), // Lighter beige bottom-left
-            ],
+            colors: [Color(0xFFEDEBE5), Color(0xFFDCC7A4)],
           ),
         ),
-        child: SafeArea(
-          child: body,
-        ),
+        child: SafeArea(child: body),
       ),
       bottomNavigationBar: bottomNavigationBar,
     );

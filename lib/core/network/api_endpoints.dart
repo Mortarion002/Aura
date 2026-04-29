@@ -7,7 +7,7 @@ class ApiEndpoints {
   // Development fallback is provided. Override in production using:
   // flutter build apk --dart-define=API_KEY=your_production_key
   static const String apiKey = String.fromEnvironment(
-    'API_KEY', 
+    'API_KEY',
     defaultValue: '461f04d9d3dd371598af3f098e5a1dcd',
   );
 
@@ -22,5 +22,5 @@ class ApiEndpoints {
 
   // Default query params added to every request
   static const String units = 'metric'; // °C, km/h
-  static const int geocodeLimit = 5;    // max suggestions when searching
+  static const int geocodeLimit = 5; // max suggestions when searching
 }

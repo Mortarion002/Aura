@@ -61,12 +61,8 @@ Future<WeatherEntity> currentWeatherByCoords(
 // ─── Forecast ─────────────────────────────────────────────────────────────
 
 @riverpod
-Future<
-  ({
-    List<HourlyForecastEntity> hourly,
-    List<DailyForecastEntity> daily,
-  })
-> forecast(ForecastRef ref, String cityName) async {
+Future<({List<HourlyForecastEntity> hourly, List<DailyForecastEntity> daily})>
+forecast(ForecastRef ref, String cityName) async {
   final repo = ref.watch(weatherRepositoryProvider);
   return repo.getForecast(cityName);
 }

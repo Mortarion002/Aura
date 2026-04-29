@@ -6,11 +6,7 @@ class DrumClock extends StatelessWidget {
   final DateTime time;
   final bool is24Hour;
 
-  const DrumClock({
-    super.key,
-    required this.time,
-    required this.is24Hour,
-  });
+  const DrumClock({super.key, required this.time, required this.is24Hour});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +15,7 @@ class DrumClock extends StatelessWidget {
       hours = hours % 12;
       if (hours == 0) hours = 12;
     }
-    
+
     final formattedHours = hours.toString().padLeft(2, '0');
     final formattedMinutes = time.minute.toString().padLeft(2, '0');
 

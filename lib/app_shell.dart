@@ -31,7 +31,7 @@ class _AppShellState extends State<AppShell> {
               ],
             ),
           ),
-          
+
           // Bottom Nav Bar floating layer
           Positioned(
             left: 0,

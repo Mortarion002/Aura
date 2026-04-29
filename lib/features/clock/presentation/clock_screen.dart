@@ -14,10 +14,7 @@ class ClockScreen extends ConsumerWidget {
     return PageView(
       scrollDirection: Axis.vertical,
       physics: const BouncingScrollPhysics(),
-      children: const [
-        _DrumClockView(),
-        WorldClockScreen(),
-      ],
+      children: const [_DrumClockView(), WorldClockScreen()],
     );
   }
 }
@@ -46,13 +43,13 @@ class _DrumClockViewState extends ConsumerState<_DrumClockView>
       parent: _entranceController,
       curve: Curves.easeOut,
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _entranceController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _entranceController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
     _entranceController.forward();
   }
 
@@ -88,10 +85,13 @@ class _DrumClockViewState extends ConsumerState<_DrumClockView>
                       child: const Icon(Icons.watch_later_outlined, size: 28),
                     ),
                     Semantics(
-                      label: is24Hour ? '24-hour format active' : '12-hour format active',
+                      label: is24Hour
+                          ? '24-hour format active'
+                          : '12-hour format active',
                       child: Toggle1224(
                         is24Hour: is24Hour,
-                        onChanged: (_) => ref.read(is24HourFormatProvider.notifier).toggle(),
+                        onChanged: (_) =>
+                            ref.read(is24HourFormatProvider.notifier).toggle(),
                       ),
                     ),
                   ],
@@ -103,12 +103,10 @@ class _DrumClockViewState extends ConsumerState<_DrumClockView>
                   children: [
                     // Stacked drum-roll numerals
                     Semantics(
-                      label: 'Current time: ${currentTime.hour}:${currentTime.minute.toString().padLeft(2, '0')}',
+                      label:
+                          'Current time: ${currentTime.hour}:${currentTime.minute.toString().padLeft(2, '0')}',
                       excludeSemantics: true,
-                      child: DrumClock(
-                        time: currentTime,
-                        is24Hour: is24Hour,
-                      ),
+                      child: DrumClock(time: currentTime, is24Hour: is24Hour),
                     ),
                     const SizedBox(width: 16),
                     // Date and extra info
@@ -118,7 +116,10 @@ class _DrumClockViewState extends ConsumerState<_DrumClockView>
                         children: [
                           Text(
                             '${_getShortDay(currentTime.weekday)},\n${currentTime.day} ${_getShortMonth(currentTime.month)}',
-                            style: AppTextStyles.cardCity.copyWith(fontSize: 24, height: 1.2),
+                            style: AppTextStyles.cardCity.copyWith(
+                              fontSize: 24,
+                              height: 1.2,
+                            ),
                           ),
                         ],
                       ),
@@ -164,7 +165,20 @@ class _DrumClockViewState extends ConsumerState<_DrumClockView>
   }
 
   String _getShortMonth(int month) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return months[month - 1];
   }
 }

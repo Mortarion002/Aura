@@ -17,7 +17,8 @@ class DottedGlobe extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Interactive globe showing location at latitude $latitude, longitude $longitude',
+      label:
+          'Interactive globe showing location at latitude $latitude, longitude $longitude',
       child: SizedBox(
         width: size,
         height: size,
@@ -36,10 +37,7 @@ class _DottedGlobePainter extends CustomPainter {
   final double pinLatitude;
   final double pinLongitude;
 
-  _DottedGlobePainter({
-    required this.pinLatitude,
-    required this.pinLongitude,
-  });
+  _DottedGlobePainter({required this.pinLatitude, required this.pinLongitude});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -57,9 +55,9 @@ class _DottedGlobePainter extends CustomPainter {
     // Draw the dotted sphere
     const int numLats = 18;
     const int numLons = 36;
-    
+
     // Slight rotation to make the globe look better
-    const double tilt = 0.2; 
+    const double tilt = 0.2;
     const double rotation = 0.5;
 
     for (int i = 0; i <= numLats; i++) {
@@ -108,7 +106,7 @@ class _DottedGlobePainter extends CustomPainter {
       double screenX = center.dx + px * radius;
       double screenY = center.dy - pty * radius;
       canvas.drawCircle(Offset(screenX, screenY), 5.0, pinPaint);
-      
+
       // Pin outer ring
       final ringPaint = Paint()
         ..color = kOrange.withValues(alpha: 0.3)

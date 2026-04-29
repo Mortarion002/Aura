@@ -14,8 +14,6 @@ class AppTheme {
         onSecondary: Colors.white,
         surface: kCardLight,
         onSurface: kTextPrimary,
-        background: kCream,
-        onBackground: kTextPrimary,
       ),
       textTheme: GoogleFonts.dmSansTextTheme().apply(
         bodyColor: kTextPrimary,

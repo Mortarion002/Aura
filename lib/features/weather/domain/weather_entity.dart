@@ -38,17 +38,17 @@ class WeatherEntity {
   final double tempMin;
   final double tempMax;
 
-  final int humidity;           // %
-  final double windSpeedKmh;    // already converted from m/s
-  final int windDeg;            // 0–360°
-  final int pressure;           // hPa
-  final double visibilityKm;    // already converted from metres
+  final int humidity; // %
+  final double windSpeedKmh; // already converted from m/s
+  final int windDeg; // 0–360°
+  final int pressure; // hPa
+  final double visibilityKm; // already converted from metres
 
   // Weather condition
-  final int conditionId;              // OWM condition code (used for icon mapping)
-  final String condition;             // e.g. "Haze", "Clear"
-  final String conditionDescription;  // e.g. "haze", "clear sky"
-  final String icon;                  // e.g. "01d"
+  final int conditionId; // OWM condition code (used for icon mapping)
+  final String condition; // e.g. "Haze", "Clear"
+  final String conditionDescription; // e.g. "haze", "clear sky"
+  final String icon; // e.g. "01d"
 
   final DateTime sunrise;
   final DateTime sunset;

@@ -25,5 +25,5 @@ class TemperatureUnitNotifier extends Notifier<TemperatureUnit> {
 
 final temperatureUnitProvider =
     NotifierProvider<TemperatureUnitNotifier, TemperatureUnit>(
-  TemperatureUnitNotifier.new,
-);
+      TemperatureUnitNotifier.new,
+    );

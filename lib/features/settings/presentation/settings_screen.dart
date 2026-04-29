@@ -51,10 +51,7 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           const Icon(Icons.settings, color: kBlack, size: 28),
           const SizedBox(width: 16),
-          Text(
-            'Settings',
-            style: AppTextStyles.cardTime,
-          ),
+          Text('Settings', style: AppTextStyles.cardTime),
         ],
       ),
     );
@@ -122,7 +119,11 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildToggleButton({required String text, required bool isSelected, required VoidCallback onTap}) {
+  Widget _buildToggleButton({
+    required String text,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -191,9 +192,15 @@ class SettingsScreen extends ConsumerWidget {
       children: [
         Text('Aura Weather & Clock', style: AppTextStyles.cardCity),
         const SizedBox(height: 8),
-        Text('Version 1.0.0', style: AppTextStyles.labelSmall.copyWith(color: kTextSecond)),
+        Text(
+          'Version 1.0.0',
+          style: AppTextStyles.labelSmall.copyWith(color: kTextSecond),
+        ),
         const SizedBox(height: 8),
-        Text('Weather data provided by OpenWeatherMap', style: AppTextStyles.labelSmall.copyWith(color: kTextSecond)),
+        Text(
+          'Weather data provided by OpenWeatherMap',
+          style: AppTextStyles.labelSmall.copyWith(color: kTextSecond),
+        ),
       ],
     );
   }

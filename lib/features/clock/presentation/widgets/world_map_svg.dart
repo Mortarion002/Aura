@@ -5,10 +5,7 @@ import '../../../../core/theme/text_styles.dart';
 class WorldMapSvg extends StatelessWidget {
   final double activeLongitude;
 
-  const WorldMapSvg({
-    super.key,
-    required this.activeLongitude,
-  });
+  const WorldMapSvg({super.key, required this.activeLongitude});
 
   @override
   Widget build(BuildContext context) {
@@ -24,23 +21,20 @@ class WorldMapSvg extends StatelessWidget {
                     size: Size(constraints.maxWidth, constraints.maxHeight),
                     painter: _MapGridPainter(),
                   ),
-                  
+
                   // Meridian Line
                   Positioned(
                     left: _getMeridianX(constraints.maxWidth, activeLongitude),
                     top: 0,
                     bottom: 0,
-                    child: Container(
-                      width: 2,
-                      color: kOrange,
-                    ),
+                    child: Container(width: 2, color: kOrange),
                   ),
                 ],
               );
             },
           ),
         ),
-        
+
         // UTC Axis Labels
         const SizedBox(height: 8),
         Row(
@@ -80,7 +74,7 @@ class _MapGridPainter extends CustomPainter {
       final x = size.width * (i / 12);
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
-    
+
     // In a full implementation, we would draw an SVG world map here
     // using flutter_svg's svg.string(...) or draw path.
   }
