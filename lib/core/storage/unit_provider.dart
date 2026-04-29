@@ -9,9 +9,10 @@ class TemperatureUnitNotifier extends Notifier<TemperatureUnit> {
   @override
   TemperatureUnit build() {
     final stored = ref.watch(sharedPreferencesProvider).getString(_key);
-    return stored == 'fahrenheit'
-        ? TemperatureUnit.fahrenheit
-        : TemperatureUnit.celsius;
+    if (stored == 'celsius') {
+      return TemperatureUnit.celsius;
+    }
+    return TemperatureUnit.fahrenheit;
   }
 
   void toggle() {
