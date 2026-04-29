@@ -17,14 +17,14 @@ class SunriseSunsetBar extends StatelessWidget {
         ? time.hour - 12
         : (time.hour == 0 ? 12 : time.hour);
     final minute = time.minute.toString().padLeft(2, '0');
-    final period = time.hour >= 12 ? 'PM' : 'AM';
-    return '$hour:$minute $period';
+    final period = time.hour >= 12 ? 'pm' : 'am';
+    return '${hour.toString().padLeft(2, '0')}:$minute $period';
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         children: [
           Row(
@@ -36,15 +36,15 @@ class SunriseSunsetBar extends StatelessWidget {
                 color: kOrange,
               ),
               _buildInfo(
-                icon: Icons.brightness_3_outlined,
+                icon: Icons.wb_twilight,
                 time: _formatTime(sunset),
                 color: kBlack,
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           SizedBox(
-            height: 40,
+            height: 52,
             width: double.infinity,
             child: CustomPaint(
               painter: _ArcPainter(
@@ -66,13 +66,14 @@ class SunriseSunsetBar extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Icon(icon, color: color, size: 20),
-        const SizedBox(width: 8),
+        Icon(icon, color: color, size: 18),
+        const SizedBox(width: 6),
         Text(
-          time.toLowerCase(),
-          style: AppTextStyles.cardCity.copyWith(
-            fontSize: 14,
+          time,
+          style: AppTextStyles.cardTime.copyWith(
+            fontSize: 13,
             color: kTextSecond,
+            height: 1,
           ),
         ),
       ],
@@ -90,27 +91,31 @@ class _ArcPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = kBlack.withValues(alpha: 0.3)
+      ..color = kBlack.withValues(alpha: 0.34)
       ..style = PaintingStyle.fill;
 
     final dotPaint = Paint()
       ..color = kBlack
       ..style = PaintingStyle.fill;
 
+    final baselinePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.65)
+      ..strokeWidth = 1;
+
     final w = size.width;
     final h = size.height;
+    final baselineY = h * 0.62;
+    canvas.drawLine(Offset(0, baselineY), Offset(w, baselineY), baselinePaint);
 
-    // Draw dotted curve (sine wave)
-    const int dotCount = 40;
+    const int dotCount = 42;
     for (int i = 0; i <= dotCount; i++) {
-      double t = i / dotCount;
-      double x = t * w;
-      // Arc formula: y = h - sin(t * pi) * h
-      double y = h - (1 - (2 * t - 1).abs() * (2 * t - 1).abs()) * h * 0.8;
-      canvas.drawCircle(Offset(x, y), 1.5, paint);
+      final t = i / dotCount;
+      final x = t * w;
+      final y =
+          baselineY - (1 - (2 * t - 1).abs() * (2 * t - 1).abs()) * h * 0.46;
+      canvas.drawCircle(Offset(x, y), 1.2, paint);
     }
 
-    // Calculate position for current time
     double progress = 0.0;
     final totalDuration = sunset.difference(sunrise).inMinutes;
     final elapsed = now.difference(sunrise).inMinutes;
@@ -118,14 +123,13 @@ class _ArcPainter extends CustomPainter {
     if (totalDuration > 0) {
       progress = elapsed / totalDuration;
     }
-    // Clamp between -0.2 and 1.2 to show it before sunrise or after sunset
     progress = progress.clamp(-0.2, 1.2);
 
-    // If it's night time, maybe show it flat? For now, just follow the curve extended.
     double x = progress * w;
     x = x.clamp(0.0, w);
-    double t = x / w;
-    double y = h - (1 - (2 * t - 1).abs() * (2 * t - 1).abs()) * h * 0.8;
+    final t = x / w;
+    final y =
+        baselineY - (1 - (2 * t - 1).abs() * (2 * t - 1).abs()) * h * 0.46;
 
     canvas.drawCircle(Offset(x, y), 5.0, dotPaint);
   }
