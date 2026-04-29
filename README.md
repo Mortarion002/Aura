@@ -159,4 +159,4 @@ For production, override via `--dart-define=API_KEY=...` at build time.
 
 ## License
 
-This project is for personal/educational use.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
