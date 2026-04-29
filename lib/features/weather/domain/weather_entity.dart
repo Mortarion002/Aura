@@ -24,6 +24,7 @@ class WeatherEntity {
     required this.sunrise,
     required this.sunset,
     required this.observedAt,
+    required this.timezoneOffsetSeconds,
   });
 
   final String cityName;
@@ -52,6 +53,7 @@ class WeatherEntity {
   final DateTime sunrise;
   final DateTime sunset;
   final DateTime observedAt;
+  final int timezoneOffsetSeconds;
 }
 
 class HourlyForecastEntity {

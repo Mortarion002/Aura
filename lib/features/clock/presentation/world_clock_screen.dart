@@ -7,6 +7,7 @@ import '../providers/clock_provider.dart';
 import '../providers/world_clock_provider.dart';
 import 'widgets/city_time_card.dart';
 import 'widgets/world_map_svg.dart';
+import '../../search_location/presentation/add_city_modal.dart';
 
 class WorldClockScreen extends ConsumerWidget {
   const WorldClockScreen({super.key});
@@ -23,7 +24,7 @@ class WorldClockScreen extends ConsumerWidget {
       backgroundColor: Colors.transparent, // Relies on AppShell or Scaffold
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // TODO: open Add City Modal
+          AddCityModal.show(context);
         },
         backgroundColor: kBlack,
         icon: const Icon(Symbols.add, color: Colors.white),

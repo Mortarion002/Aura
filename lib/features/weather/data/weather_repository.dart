@@ -80,6 +80,7 @@ class WeatherRepository {
       sunrise: DateTime.fromMillisecondsSinceEpoch(m.sys.sunrise * 1000),
       sunset: DateTime.fromMillisecondsSinceEpoch(m.sys.sunset * 1000),
       observedAt: DateTime.fromMillisecondsSinceEpoch(m.dt * 1000),
+      timezoneOffsetSeconds: m.timezone,
     );
   }
 
