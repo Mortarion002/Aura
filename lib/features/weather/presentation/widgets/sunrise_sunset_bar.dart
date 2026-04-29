@@ -12,13 +12,11 @@ class SunriseSunsetBar extends StatelessWidget {
     required this.sunset,
   });
 
-  String _formatTime(DateTime time) {
-    final hour = time.hour > 12
-        ? time.hour - 12
-        : (time.hour == 0 ? 12 : time.hour);
-    final minute = time.minute.toString().padLeft(2, '0');
-    final period = time.hour >= 12 ? 'pm' : 'am';
-    return '${hour.toString().padLeft(2, '0')}:$minute $period';
+  String _formatTime(DateTime t) {
+    final h = t.hour > 12 ? t.hour - 12 : (t.hour == 0 ? 12 : t.hour);
+    final m = t.minute.toString().padLeft(2, '0');
+    final period = t.hour >= 12 ? 'pm' : 'am';
+    return '${h.toString().padLeft(2, '0')}:$m $period';
   }
 
   @override
@@ -68,14 +66,7 @@ class SunriseSunsetBar extends StatelessWidget {
       children: [
         Icon(icon, color: color, size: 18),
         const SizedBox(width: 6),
-        Text(
-          time,
-          style: AppTextStyles.cardTime.copyWith(
-            fontSize: 13,
-            color: kTextSecond,
-            height: 1,
-          ),
-        ),
+        Text(time, style: AppTextStyles.cardTime(size: 13, color: kTextSecond)),
       ],
     );
   }
@@ -94,9 +85,7 @@ class _ArcPainter extends CustomPainter {
       ..color = kBlack.withValues(alpha: 0.34)
       ..style = PaintingStyle.fill;
 
-    final dotPaint = Paint()
-      ..color = kBlack
-      ..style = PaintingStyle.fill;
+    final dotPaint = Paint()..color = kBlack..style = PaintingStyle.fill;
 
     final baselinePaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.65)
@@ -116,26 +105,20 @@ class _ArcPainter extends CustomPainter {
       canvas.drawCircle(Offset(x, y), 1.2, paint);
     }
 
-    double progress = 0.0;
     final totalDuration = sunset.difference(sunrise).inMinutes;
     final elapsed = now.difference(sunrise).inMinutes;
-
-    if (totalDuration > 0) {
-      progress = elapsed / totalDuration;
-    }
+    double progress =
+        totalDuration > 0 ? elapsed / totalDuration : 0.0;
     progress = progress.clamp(-0.2, 1.2);
 
-    double x = progress * w;
-    x = x.clamp(0.0, w);
+    final x = (progress * w).clamp(0.0, w);
     final t = x / w;
     final y =
         baselineY - (1 - (2 * t - 1).abs() * (2 * t - 1).abs()) * h * 0.46;
-
     canvas.drawCircle(Offset(x, y), 5.0, dotPaint);
   }
 
   @override
-  bool shouldRepaint(covariant _ArcPainter oldDelegate) {
-    return oldDelegate.now.minute != now.minute;
-  }
+  bool shouldRepaint(covariant _ArcPainter old) =>
+      old.now.minute != now.minute;
 }

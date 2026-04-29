@@ -6,65 +6,72 @@ class Toggle1224 extends StatelessWidget {
   final bool is24Hour;
   final ValueChanged<bool> onChanged;
 
-  const Toggle1224({
-    super.key,
-    required this.is24Hour,
-    required this.onChanged,
+  const Toggle1224({super.key, required this.is24Hour, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) => _SegmentPill(
+    segments: const ['12h', '24h'],
+    selectedIndex: is24Hour ? 1 : 0,
+    onSelected: (i) => onChanged(i == 1),
+  );
+}
+
+class ToggleCF extends StatelessWidget {
+  final bool isCelsius;
+  final VoidCallback onToggle;
+
+  const ToggleCF({super.key, required this.isCelsius, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) => _SegmentPill(
+    segments: const ['°C', '°F'],
+    selectedIndex: isCelsius ? 0 : 1,
+    onSelected: (_) => onToggle(),
+  );
+}
+
+class _SegmentPill extends StatelessWidget {
+  final List<String> segments;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  const _SegmentPill({
+    required this.segments,
+    required this.selectedIndex,
+    required this.onSelected,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 36,
+      height: 34,
       decoration: BoxDecoration(
-        color: kCardLight,
-        borderRadius: BorderRadius.circular(18),
+        color: kCard,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildSegment(
-            text: '12h',
-            isSelected: !is24Hour,
-            onTap: () => onChanged(false),
-          ),
-          _buildSegment(
-            text: '24h',
-            isSelected: is24Hour,
-            onTap: () => onChanged(true),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSegment({
-    required String text,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return Semantics(
-      label: '$text format${isSelected ? ', selected' : ''}',
-      button: true,
-      selected: isSelected,
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: isSelected ? kBlack : Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Text(
-            text,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: isSelected ? Colors.white : kBlack,
-              fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+        children: List.generate(segments.length, (i) {
+          final active = selectedIndex == i;
+          return GestureDetector(
+            onTap: () => onSelected(i),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: active ? kBlack : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                segments[i],
+                style: AppTextStyles.labelSmall(
+                  color: active ? kWhite : kDim,
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        }),
       ),
     );
   }

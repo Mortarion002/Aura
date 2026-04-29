@@ -1,30 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'colors.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
-    return ThemeData(
+    final base = ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: kCream,
+      scaffoldBackgroundColor: kWhite,
       colorScheme: const ColorScheme.light(
         primary: kOrange,
-        onPrimary: Colors.white,
+        onPrimary: kWhite,
         secondary: kBlack,
-        onSecondary: Colors.white,
-        surface: kCardLight,
-        onSurface: kTextPrimary,
+        onSecondary: kWhite,
+        surface: kWhite,
+        onSurface: kBlack,
       ),
-      textTheme: GoogleFonts.dmSansTextTheme().apply(
-        bodyColor: kTextPrimary,
-        displayColor: kTextPrimary,
+      textTheme: GoogleFonts.outfitTextTheme().apply(
+        bodyColor: kBlack,
+        displayColor: kBlack,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: kBlack),
         scrolledUnderElevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
     );
+    return base;
   }
 }

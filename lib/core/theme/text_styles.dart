@@ -3,78 +3,102 @@ import 'package:google_fonts/google_fonts.dart';
 import 'colors.dart';
 
 class AppTextStyles {
-  static TextStyle get displayHours => GoogleFonts.orbitron(
-    fontSize: 120,
-    fontWeight: FontWeight.w600,
-    color: kBlack,
-    height: 0.9,
-    letterSpacing: 0,
-  );
+  // Clock screen — drum digits
+  static TextStyle drumDigit({double size = 118, Color color = kBlack}) =>
+      GoogleFonts.outfit(
+        fontSize: size,
+        fontWeight: FontWeight.w900,
+        color: color,
+        height: 1.0,
+        letterSpacing: -0.02 * size,
+      );
 
-  static TextStyle get displayMinutes => GoogleFonts.orbitron(
-    fontSize: 120,
-    fontWeight: FontWeight.w600,
-    color: kBlack,
-    height: 0.9,
-    letterSpacing: 0,
-  );
+  // Clock screen — seconds column
+  static TextStyle seconds({double size = 36, Color color = kBlack}) =>
+      GoogleFonts.outfit(
+        fontSize: size,
+        fontWeight: FontWeight.w800,
+        color: color,
+        height: 1.0,
+        fontFeatures: [const FontFeature.tabularFigures()],
+      );
 
-  static TextStyle get displaySeconds => GoogleFonts.orbitron(
-    fontSize: 120,
-    fontWeight: FontWeight.w600,
-    color: kBlack,
-    height: 0.9,
-    letterSpacing: 0,
-  );
+  // Clock screen — city name hero
+  static TextStyle cityHero({double size = 46, Color color = kBlack}) =>
+      GoogleFonts.outfit(
+        fontSize: size,
+        fontWeight: FontWeight.w900,
+        color: color,
+        height: 1.05,
+        letterSpacing: -0.02 * size,
+      );
 
-  static TextStyle get heroTemperature => GoogleFonts.orbitron(
-    fontSize: 64,
-    fontWeight: FontWeight.w700,
-    color: kBlack,
-    height: 0.95,
-    letterSpacing: 0,
-  );
+  // Clock screen — date text
+  static TextStyle dateLabel({double size = 20, Color color = kBlack}) =>
+      GoogleFonts.outfit(
+        fontSize: size,
+        fontWeight: FontWeight.w700,
+        color: color,
+        height: 1.25,
+      );
 
-  static TextStyle get heroLocation => GoogleFonts.dmSans(
-    fontSize: 58,
-    fontWeight: FontWeight.w400,
-    color: kBlack,
-    height: 1.05,
-    letterSpacing: 0,
-  );
+  // Weather — temperature hero
+  static TextStyle heroTemperature({double size = 72, Color color = kBlack}) =>
+      GoogleFonts.outfit(
+        fontSize: size,
+        fontWeight: FontWeight.w900,
+        color: color,
+        height: 0.85,
+        letterSpacing: -0.04 * size,
+      );
 
-  static TextStyle get displayUnit => GoogleFonts.michroma(
-    fontSize: 14,
-    fontWeight: FontWeight.w300,
-    letterSpacing: 0,
-    color: kTextPrimary,
-  );
+  // World clock & timer — card time
+  static TextStyle cardTime({double size = 30, Color color = kBlack}) =>
+      GoogleFonts.outfit(
+        fontSize: size,
+        fontWeight: FontWeight.w800,
+        color: color,
+        height: 1.0,
+        letterSpacing: -0.01 * size,
+      );
 
-  static TextStyle get cardCity => GoogleFonts.michroma(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: kBlack,
-    letterSpacing: 0,
-  );
+  // Card labels (city name, section headers)
+  static TextStyle cardCity({double size = 14, Color color = kBlack}) =>
+      GoogleFonts.outfit(
+        fontSize: size,
+        fontWeight: FontWeight.w600,
+        color: color,
+      );
 
-  static TextStyle get cardUtc => GoogleFonts.michroma(
-    fontSize: 10,
-    fontWeight: FontWeight.w400,
-    color: kTextSecond,
-    letterSpacing: 0,
-  );
+  // Small muted labels (UTC, dim text)
+  static TextStyle cardUtc({double size = 11, Color color = kDim}) =>
+      GoogleFonts.outfit(
+        fontSize: size,
+        fontWeight: FontWeight.w400,
+        color: color,
+      );
 
-  static TextStyle get cardTime => GoogleFonts.orbitron(
-    fontSize: 24,
-    fontWeight: FontWeight.w500,
-    color: kBlack,
-    letterSpacing: 0,
-  );
+  // Toggle / pill labels
+  static TextStyle labelSmall({double size = 13, Color color = kBlack}) =>
+      GoogleFonts.outfit(
+        fontSize: size,
+        fontWeight: FontWeight.w600,
+        color: color,
+      );
 
-  static TextStyle get labelSmall => GoogleFonts.michroma(
-    fontSize: 10,
-    fontWeight: FontWeight.w400,
-    letterSpacing: 0,
-    color: kTextPrimary,
-  );
+  // Timer center display
+  static TextStyle timerDisplay({double size = 30, Color color = kBlack}) =>
+      GoogleFonts.outfit(
+        fontSize: size,
+        fontWeight: FontWeight.w800,
+        color: color,
+        letterSpacing: -1,
+      );
+
+  // Legacy getters — kept so un-migrated widgets don't break
+  static TextStyle get displayHours => drumDigit();
+  static TextStyle get displayMinutes => drumDigit();
+  static TextStyle get displaySeconds => drumDigit();
+  static TextStyle get heroLocation => cityHero();
+  static TextStyle get displayUnit => labelSmall();
 }

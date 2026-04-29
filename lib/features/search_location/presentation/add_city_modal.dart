@@ -40,10 +40,10 @@ class _AddCityModalState extends ConsumerState<AddCityModal> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
-        color: kCream,
+        color: kWhite,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -51,10 +51,7 @@ class _AddCityModalState extends ConsumerState<AddCityModal> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Add City',
-                style: AppTextStyles.cardCity.copyWith(fontSize: 24),
-              ),
+              Text('Add City', style: AppTextStyles.cardCity(size: 24)),
               GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
@@ -70,21 +67,17 @@ class _AddCityModalState extends ConsumerState<AddCityModal> {
           ),
           const SizedBox(height: 24),
 
-          // Search Field
+          // Search field
           TextField(
             controller: _controller,
-            onChanged: (value) {
-              setState(() {
-                _query = value;
-              });
-            },
-            style: AppTextStyles.cardCity,
+            onChanged: (v) => setState(() => _query = v),
+            style: AppTextStyles.cardCity(),
             decoration: InputDecoration(
               hintText: 'Search city...',
-              hintStyle: AppTextStyles.cardCity.copyWith(color: kTextSecond),
-              prefixIcon: const Icon(Symbols.search, color: kTextSecond),
+              hintStyle: AppTextStyles.cardCity(color: kDim),
+              prefixIcon: const Icon(Symbols.search, color: kDim),
               filled: true,
-              fillColor: kCardLight,
+              fillColor: kCard,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide.none,
@@ -94,7 +87,7 @@ class _AddCityModalState extends ConsumerState<AddCityModal> {
           ),
           const SizedBox(height: 24),
 
-          // Results List
+          // Results
           Expanded(
             child: searchResults.when(
               data: (cities) {
@@ -104,9 +97,7 @@ class _AddCityModalState extends ConsumerState<AddCityModal> {
                       _query.isEmpty
                           ? 'Type to search for a city'
                           : 'No results found',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: kTextSecond,
-                      ),
+                      style: AppTextStyles.labelSmall(color: kDim),
                     ),
                   );
                 }
@@ -118,11 +109,12 @@ class _AddCityModalState extends ConsumerState<AddCityModal> {
                   itemBuilder: (context, index) {
                     final city = cities[index];
                     return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                      title: Text(city.name, style: AppTextStyles.cardCity),
+                      contentPadding:
+                          const EdgeInsets.symmetric(vertical: 8),
+                      title: Text(city.name, style: AppTextStyles.cardCity()),
                       subtitle: Text(
                         city.country,
-                        style: AppTextStyles.labelSmall,
+                        style: AppTextStyles.labelSmall(),
                       ),
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(
@@ -137,11 +129,10 @@ class _AddCityModalState extends ConsumerState<AddCityModal> {
                           TimezoneUtils.formatOffset(
                             city.timezoneOffsetSeconds,
                           ),
-                          style: AppTextStyles.cardUtc,
+                          style: AppTextStyles.cardUtc(),
                         ),
                       ),
                       onTap: () {
-                        // Add city and set as active
                         ref.read(savedCitiesProvider.notifier).addCity(city);
                         ref.read(activeCityProvider.notifier).setCity(city);
                         Navigator.of(context).pop();
@@ -150,13 +141,12 @@ class _AddCityModalState extends ConsumerState<AddCityModal> {
                   },
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: kOrange),
-              ),
+              loading: () =>
+                  const Center(child: CircularProgressIndicator(color: kOrange)),
               error: (error, stack) => Center(
                 child: Text(
                   'Error occurred during search',
-                  style: AppTextStyles.labelSmall.copyWith(color: Colors.red),
+                  style: AppTextStyles.labelSmall(color: Colors.red),
                 ),
               ),
             ),

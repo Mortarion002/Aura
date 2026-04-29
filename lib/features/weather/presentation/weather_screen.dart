@@ -80,17 +80,14 @@ class WeatherScreen extends ConsumerWidget {
                           DateFormatter.dayAndDate(
                             DateTime.now(),
                           ).replaceFirst(', ', ',\n'),
-                          style: AppTextStyles.cardCity.copyWith(
-                            fontSize: 14,
-                            height: 1.35,
-                          ),
+                          style: AppTextStyles.cardCity(size: 14),
                         ),
                       ),
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
                           TempFormatter.format(weather.temperature, unit),
-                          style: AppTextStyles.heroTemperature,
+                          style: AppTextStyles.heroTemperature(),
                         ),
                       ),
                     ],

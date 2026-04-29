@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import '../theme/colors.dart';
 
+// Thin wrapper kept for backward-compat during migration.
+// Phase 4 will inline it into WeatherScreen.
 class OrangeBorderScaffold extends StatelessWidget {
   final Widget body;
   final Widget? bottomNavigationBar;
@@ -15,18 +18,8 @@ class OrangeBorderScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [Color(0xFFEDEBE5), Color(0xFFDCC7A4)],
-          ),
-        ),
-        child: SafeArea(child: body),
-      ),
+      backgroundColor: backgroundColor ?? kWhite,
+      body: SafeArea(child: body),
       bottomNavigationBar: bottomNavigationBar,
     );
   }

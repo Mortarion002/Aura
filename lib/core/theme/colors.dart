@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 
-const kCream = Color(0xFFEDEBE5);
-const kWarmSand = Color(0xFFDCC7A4);
-const kPanelGrey = Color(0xFFE7E7E7);
-const kMapGrey = Color(0xFF8E8E8B);
-const kOrange = Color(0xFFFF8A00);
+// Aura design palette (matches HTML prototype)
+const kWhite = Color(0xFFFFFFFF);
 const kBlack = Color(0xFF000000);
+const kCard = Color(0xFFEFEFEF);
+const kPanel = Color(0xFFE8E8E8);
+const kDim = Color(0xFF9A9A9A);
+const kOrange = Color(0xFFE8823A);
+const kOrangePeach = Color(0xFFFFB07A);
+const kRed = Color(0xFFE25A5A);
+const kMapGrey = Color(0xFFADADAD);
+
+// Legacy aliases kept for widgets not yet migrated
+const kCream = Color(0xFFEFEFEF);
+const kPanelGrey = Color(0xFFE8E8E8);
 const kCardLight = Color(0xFFFFFFFF);
 const kTextPrimary = Color(0xFF000000);
-const kTextSecond = Color(0xFF7C7C7C);
-const kTextGhost = Color(0x1A000000);
-const kTextMid = Color(0x4D000000);
+const kTextSecond = Color(0xFF9A9A9A);

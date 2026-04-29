@@ -18,22 +18,22 @@ class ForecastScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activeCity = ref.watch(activeCityProvider);
-
     return OrangeBorderScaffold(
       body: Column(
         children: [
           _buildHeader(context, activeCity.name),
-          Expanded(child: _buildForecastContent(context, ref, activeCity.name)),
+          Expanded(
+              child: _buildForecastContent(context, ref, activeCity.name)),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, String? cityName) {
+  Widget _buildHeader(BuildContext context, String cityName) {
     return SafeArea(
       bottom: false,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Row(
           children: [
             IconButton(
@@ -42,12 +42,12 @@ class ForecastScreen extends ConsumerWidget {
             ),
             Expanded(
               child: Text(
-                cityName ?? 'Forecast',
-                style: AppTextStyles.cardCity,
+                cityName,
+                style: AppTextStyles.cardCity(),
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(width: 48), // Balance for the back button
+            const SizedBox(width: 48),
           ],
         ),
       ),
@@ -55,31 +55,26 @@ class ForecastScreen extends ConsumerWidget {
   }
 
   Widget _buildForecastContent(
-    BuildContext context,
-    WidgetRef ref,
-    String cityName,
-  ) {
+      BuildContext context, WidgetRef ref, String cityName) {
     final forecastAsync = ref.watch(forecastProvider(cityName));
     final unit = ref.watch(temperatureUnitProvider);
 
     return forecastAsync.when(
-      data: (data) {
-        return CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(child: _buildHourlyStrip(data.hourly, unit)),
-            SliverPadding(
-              padding: const EdgeInsets.all(24.0),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final day = data.daily[index];
-                  return _buildDailyRow(day, unit);
-                }, childCount: data.daily.length),
+      data: (data) => CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _buildHourlyStrip(data.hourly, unit)),
+          SliverPadding(
+            padding: const EdgeInsets.all(24),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => _buildDailyRow(data.daily[index], unit),
+                childCount: data.daily.length,
               ),
             ),
-          ],
-        );
-      },
-      loading: () => _buildShimmer(),
+          ),
+        ],
+      ),
+      loading: _buildShimmer,
       error: (err, stack) => Center(
         child: RetryErrorCard(
           message: err.toString(),
@@ -94,38 +89,31 @@ class ForecastScreen extends ConsumerWidget {
       height: 140,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: hourly.length > 24 ? 24 : hourly.length,
         itemBuilder: (context, index) {
           final hour = hourly[index];
           return Container(
             width: 72,
-            margin: const EdgeInsets.symmetric(horizontal: 8.0),
+            margin: const EdgeInsets.symmetric(horizontal: 8),
             decoration: BoxDecoration(
-              color: kCardLight,
+              color: kWhite,
               borderRadius: BorderRadius.circular(36),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  DateFormatter.hourLabel(hour.time),
-                  style: AppTextStyles.labelSmall,
-                ),
+                Text(DateFormatter.hourLabel(hour.time),
+                    style: AppTextStyles.labelSmall()),
                 const SizedBox(height: 12),
                 Icon(
-                  WeatherIconMapper.iconFor(
-                    hour.conditionId,
-                    isDay: true,
-                  ), // Assuming day for simplicity or calculate based on time
+                  WeatherIconMapper.iconFor(hour.conditionId, isDay: true),
                   color: WeatherIconMapper.colorFor(hour.conditionId),
                   size: 28,
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  TempFormatter.format(hour.temperature, unit),
-                  style: AppTextStyles.cardCity,
-                ),
+                Text(TempFormatter.format(hour.temperature, unit),
+                    style: AppTextStyles.cardCity()),
               ],
             ),
           );
@@ -136,16 +124,14 @@ class ForecastScreen extends ConsumerWidget {
 
   Widget _buildDailyRow(dynamic day, TemperatureUnit unit) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
             width: 100,
-            child: Text(
-              DateFormatter.shortDayCaps(day.date),
-              style: AppTextStyles.cardCity,
-            ),
+            child: Text(DateFormatter.shortDayCaps(day.date),
+                style: AppTextStyles.cardCity()),
           ),
           Icon(
             WeatherIconMapper.iconFor(day.conditionId),
@@ -157,15 +143,11 @@ class ForecastScreen extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Text(
-                  TempFormatter.format(day.tempHigh, unit),
-                  style: AppTextStyles.cardCity,
-                ),
+                Text(TempFormatter.format(day.tempHigh, unit),
+                    style: AppTextStyles.cardCity()),
                 const SizedBox(width: 8),
-                Text(
-                  TempFormatter.format(day.tempLow, unit),
-                  style: AppTextStyles.cardCity.copyWith(color: kTextSecond),
-                ),
+                Text(TempFormatter.format(day.tempLow, unit),
+                    style: AppTextStyles.cardCity(color: kDim)),
               ],
             ),
           ),
@@ -176,7 +158,7 @@ class ForecastScreen extends ConsumerWidget {
 
   Widget _buildShimmer() {
     return Shimmer.fromColors(
-      baseColor: kCardLight,
+      baseColor: kWhite,
       highlightColor: Colors.white,
       child: Column(
         children: [
@@ -184,37 +166,33 @@ class ForecastScreen extends ConsumerWidget {
             height: 140,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: 6,
-              itemBuilder: (context, index) {
-                return Container(
-                  width: 72,
-                  margin: const EdgeInsets.symmetric(horizontal: 8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(36),
-                  ),
-                );
-              },
+              itemBuilder: (context, index) => Container(
+                width: 72,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(36),
+                ),
+              ),
             ),
           ),
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(24),
               itemCount: 5,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(width: 80, height: 24, color: Colors.white),
-                      Container(width: 28, height: 28, color: Colors.white),
-                      Container(width: 80, height: 24, color: Colors.white),
-                    ],
-                  ),
-                );
-              },
+              itemBuilder: (context, index) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(width: 80, height: 24, color: Colors.white),
+                    Container(width: 28, height: 28, color: Colors.white),
+                    Container(width: 80, height: 24, color: Colors.white),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
