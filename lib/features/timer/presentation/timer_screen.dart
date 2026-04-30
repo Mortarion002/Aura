@@ -341,7 +341,7 @@ class _TimerScreenState extends State<TimerScreen>
 
             // Controls
             Padding(
-              padding: const EdgeInsets.only(bottom: 0),
+              padding: const EdgeInsets.only(bottom: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
