@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../../core/models/city_model.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/text_styles.dart';
 import '../../../core/widgets/aura_logo.dart';
 import '../../../core/widgets/screen_enter.dart';
 import '../../clock/providers/clock_provider.dart';
+import '../../search_location/presentation/providers/geocoding_provider.dart';
+import '../../weather/presentation/providers/weather_provider.dart';
 import '../providers/world_clock_provider.dart';
 import 'widgets/city_time_card.dart';
 
@@ -18,6 +21,7 @@ class WorldClockScreen extends ConsumerStatefulWidget {
 
 class _WorldClockScreenState extends ConsumerState<WorldClockScreen> {
   bool _searching = false;
+  bool _locating = false;
   final _queryCtrl = TextEditingController();
 
   @override
@@ -26,13 +30,70 @@ class _WorldClockScreenState extends ConsumerState<WorldClockScreen> {
     super.dispose();
   }
 
+  Future<void> _handleLocate() async {
+    setState(() => _locating = true);
+    try {
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        _showSnack('Location permission denied');
+        return;
+      }
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        _showSnack('Please enable location services');
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+        ),
+      );
+
+      final repo = ref.read(weatherRepositoryProvider);
+      final weather = await repo.getCurrentWeatherByCoords(
+        position.latitude,
+        position.longitude,
+      );
+
+      final city = CityModel(
+        name: weather.cityName,
+        country: weather.country,
+        lat: weather.lat,
+        lon: weather.lon,
+        timezoneOffsetSeconds: weather.timezoneOffsetSeconds,
+      );
+
+      ref.read(savedCitiesProvider.notifier).addCity(city);
+      ref.read(activeCityProvider.notifier).setCity(city);
+    } catch (_) {
+      _showSnack('Could not detect your location');
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
+  void _showSnack(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg, style: AppTextStyles.cardCity(size: 13, color: kWhite)),
+        backgroundColor: kBlack,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final worldTimes = ref.watch(worldClockTimesProvider);
     final activeCity = ref.watch(activeCityProvider);
     final is24Hour = ref.watch(is24HourFormatProvider);
     final savedCities = ref.watch(savedCitiesProvider);
-    final query = _queryCtrl.text.toLowerCase();
+    final query = _queryCtrl.text.trim();
 
     final displayCities = worldTimes.entries.toList();
 
@@ -40,38 +101,76 @@ class _WorldClockScreenState extends ConsumerState<WorldClockScreen> {
       child: SafeArea(
         child: Column(
           children: [
-            // Header
+            // ── Header ────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 4, 14, 6),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const AuraLogo(size: 30),
-                  GestureDetector(
-                    onTap: () => setState(() {
-                      _searching = !_searching;
-                      if (!_searching) _queryCtrl.clear();
-                    }),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: _searching ? kBlack : kCard,
-                        shape: BoxShape.circle,
+                  Row(
+                    children: [
+                      // Location button
+                      _locating
+                          ? const SizedBox(
+                              width: 36,
+                              height: 36,
+                              child: Center(
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: kBlack,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : GestureDetector(
+                              onTap: _handleLocate,
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: const BoxDecoration(
+                                  color: kCard,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.my_location,
+                                  size: 17,
+                                  color: kDim,
+                                ),
+                              ),
+                            ),
+                      const SizedBox(width: 8),
+                      // Search button
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          _searching = !_searching;
+                          if (!_searching) _queryCtrl.clear();
+                        }),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: _searching ? kBlack : kCard,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.search,
+                            size: 17,
+                            color: _searching ? kWhite : kDim,
+                          ),
+                        ),
                       ),
-                      child: Icon(
-                        Icons.search,
-                        size: 17,
-                        color: _searching ? kWhite : kDim,
-                      ),
-                    ),
+                    ],
                   ),
                 ],
               ),
             ),
 
-            // Search bar
+            // ── Search bar + results ───────────────────────────────────
             if (_searching) ...[
               Padding(
                 padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
@@ -83,11 +182,8 @@ class _WorldClockScreenState extends ConsumerState<WorldClockScreen> {
                       onChanged: (_) => setState(() {}),
                       style: AppTextStyles.cardCity(size: 14),
                       decoration: InputDecoration(
-                        hintText: 'Search city…',
-                        hintStyle: AppTextStyles.cardCity(
-                          size: 14,
-                          color: kDim,
-                        ),
+                        hintText: 'Search any city…',
+                        hintStyle: AppTextStyles.cardCity(size: 14, color: kDim),
                         filled: true,
                         fillColor: kCard,
                         contentPadding: const EdgeInsets.symmetric(
@@ -108,8 +204,7 @@ class _WorldClockScreenState extends ConsumerState<WorldClockScreen> {
                         onAdd: (city) {
                           ref.read(savedCitiesProvider.notifier).addCity(city);
                           _queryCtrl.clear();
-                          _searching = false;
-                          setState(() {});
+                          setState(() => _searching = false);
                         },
                       ),
                     ],
@@ -118,7 +213,7 @@ class _WorldClockScreenState extends ConsumerState<WorldClockScreen> {
               ),
             ],
 
-            // City grid
+            // ── City grid ──────────────────────────────────────────────
             Expanded(
               child: GridView.builder(
                 padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
@@ -159,7 +254,7 @@ class _WorldClockScreenState extends ConsumerState<WorldClockScreen> {
   }
 }
 
-// ── Search results ────────────────────────────────────────────────────────────
+// ── Search results (OWM geocoding) ────────────────────────────────────────────
 class _SearchResults extends ConsumerWidget {
   final String query;
   final Set<String> savedNames;
@@ -173,212 +268,98 @@ class _SearchResults extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final matches = kAllCities
-        .where(
-          (c) =>
-              c.name.toLowerCase().contains(query) &&
-              !savedNames.contains(c.name),
-        )
-        .toList();
+    final searchAsync = ref.watch(geocodingSearchProvider(query));
 
-    if (matches.isEmpty) {
-      return Container(
+    return searchAsync.when(
+      loading: () => Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: kCard,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2, color: kBlack),
+          ),
+        ),
+      ),
+      error: (e, st) => Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: kCard,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text('No cities found', style: AppTextStyles.cardUtc(size: 13)),
-      );
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        decoration: BoxDecoration(color: kCard),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 270),
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: matches.length > 6
-                ? const BouncingScrollPhysics()
-                : const NeverScrollableScrollPhysics(),
-            itemCount: matches.length,
-            separatorBuilder: (context, index) =>
-                const Divider(height: 1, thickness: 0.5),
-            itemBuilder: (_, i) {
-              final c = matches[i];
-              return GestureDetector(
-                onTap: () => onAdd(c),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 11,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          c.name,
-                          style: AppTextStyles.cardCity(size: 14),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        _fmtUtc(c.timezoneOffsetSeconds),
-                        style: AppTextStyles.cardUtc(size: 12),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+        child: Text('Search failed', style: AppTextStyles.cardUtc(size: 13)),
       ),
+      data: (cities) {
+        final filtered =
+            cities.where((c) => !savedNames.contains(c.name)).toList();
+
+        if (filtered.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: kCard,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              'No cities found',
+              style: AppTextStyles.cardUtc(size: 13),
+            ),
+          );
+        }
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            color: kCard,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 270),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: filtered.length > 6
+                    ? const BouncingScrollPhysics()
+                    : const NeverScrollableScrollPhysics(),
+                itemCount: filtered.length,
+                separatorBuilder: (context, index) =>
+                    const Divider(height: 1, thickness: 0.5),
+                itemBuilder: (_, i) {
+                  final c = filtered[i];
+                  return GestureDetector(
+                    onTap: () => onAdd(c),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 11,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              c.name,
+                              style: AppTextStyles.cardCity(size: 14),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            c.country,
+                            style: AppTextStyles.cardUtc(size: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
-
-  String _fmtUtc(int secs) {
-    if (secs == 0) return 'UTC 0';
-    final sign = secs < 0 ? '-' : '+';
-    final h = secs.abs() ~/ 3600;
-    final m = (secs.abs() % 3600) ~/ 60;
-    return m == 0
-        ? 'UTC $sign$h'
-        : 'UTC $sign$h:${m.toString().padLeft(2, '0')}';
-  }
 }
-
-// ── Full 18-city catalog (matches HTML ALL_CITIES) ────────────────────────────
-const kAllCities = [
-  CityModel(
-    name: 'London',
-    country: 'UK',
-    lat: 51.5,
-    lon: -0.1,
-    timezoneOffsetSeconds: 3600,
-  ),
-  CityModel(
-    name: 'Paris',
-    country: 'France',
-    lat: 48.9,
-    lon: 2.3,
-    timezoneOffsetSeconds: 7200,
-  ),
-  CityModel(
-    name: 'New York',
-    country: 'US',
-    lat: 40.7,
-    lon: -74.0,
-    timezoneOffsetSeconds: -14400,
-  ),
-  CityModel(
-    name: 'Los Angeles',
-    country: 'US',
-    lat: 34.0,
-    lon: -118.2,
-    timezoneOffsetSeconds: -25200,
-  ),
-  CityModel(
-    name: 'Tokyo',
-    country: 'Japan',
-    lat: 35.7,
-    lon: 139.7,
-    timezoneOffsetSeconds: 32400,
-  ),
-  CityModel(
-    name: 'Dubai',
-    country: 'UAE',
-    lat: 25.2,
-    lon: 55.3,
-    timezoneOffsetSeconds: 14400,
-  ),
-  CityModel(
-    name: 'Sydney',
-    country: 'Australia',
-    lat: -33.9,
-    lon: 151.2,
-    timezoneOffsetSeconds: 36000,
-  ),
-  CityModel(
-    name: 'Singapore',
-    country: 'Singapore',
-    lat: 1.3,
-    lon: 103.8,
-    timezoneOffsetSeconds: 28800,
-  ),
-  CityModel(
-    name: 'São Paulo',
-    country: 'Brazil',
-    lat: -23.5,
-    lon: -46.6,
-    timezoneOffsetSeconds: -10800,
-  ),
-  CityModel(
-    name: 'Mumbai',
-    country: 'India',
-    lat: 19.1,
-    lon: 72.9,
-    timezoneOffsetSeconds: 19800,
-  ),
-  CityModel(
-    name: 'Berlin',
-    country: 'Germany',
-    lat: 52.5,
-    lon: 13.4,
-    timezoneOffsetSeconds: 7200,
-  ),
-  CityModel(
-    name: 'Cairo',
-    country: 'Egypt',
-    lat: 30.0,
-    lon: 31.2,
-    timezoneOffsetSeconds: 7200,
-  ),
-  CityModel(
-    name: 'Toronto',
-    country: 'Canada',
-    lat: 43.7,
-    lon: -79.4,
-    timezoneOffsetSeconds: -14400,
-  ),
-  CityModel(
-    name: 'Mexico City',
-    country: 'Mexico',
-    lat: 19.4,
-    lon: -99.1,
-    timezoneOffsetSeconds: -21600,
-  ),
-  CityModel(
-    name: 'Seoul',
-    country: 'South Korea',
-    lat: 37.6,
-    lon: 126.9,
-    timezoneOffsetSeconds: 32400,
-  ),
-  CityModel(
-    name: 'Amsterdam',
-    country: 'Netherlands',
-    lat: 52.4,
-    lon: 4.9,
-    timezoneOffsetSeconds: 7200,
-  ),
-  CityModel(
-    name: 'Chicago',
-    country: 'US',
-    lat: 41.9,
-    lon: -87.6,
-    timezoneOffsetSeconds: -18000,
-  ),
-  CityModel(
-    name: 'Hong Kong',
-    country: 'China',
-    lat: 22.3,
-    lon: 114.2,
-    timezoneOffsetSeconds: 28800,
-  ),
-];

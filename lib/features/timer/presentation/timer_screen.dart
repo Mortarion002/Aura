@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/colors.dart';
@@ -29,6 +30,7 @@ class _TimerScreenState extends State<TimerScreen>
   Timer? _countdownTimer;
   late final AnimationController _orbitCtrl;
   late final AnimationController _finishCtrl;
+  final _player = AudioPlayer();
 
   @override
   void initState() {
@@ -48,6 +50,7 @@ class _TimerScreenState extends State<TimerScreen>
     _countdownTimer?.cancel();
     _orbitCtrl.dispose();
     _finishCtrl.dispose();
+    _player.dispose();
     super.dispose();
   }
 
@@ -80,6 +83,7 @@ class _TimerScreenState extends State<TimerScreen>
         _runStartedAt = null;
         _countdownTimer?.cancel();
         _finishCtrl.forward(from: 0);
+        _player.play(AssetSource('freiren.m4a'));
       }
     });
   }
@@ -123,6 +127,7 @@ class _TimerScreenState extends State<TimerScreen>
 
   void _doReset() {
     _countdownTimer?.cancel();
+    _player.stop();
     setState(() {
       _running = false;
       _elapsed = Duration.zero;
