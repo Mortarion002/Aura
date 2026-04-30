@@ -75,6 +75,7 @@ class _TimerScreenState extends State<TimerScreen>
   void _syncElapsed() {
     if (!_running) return;
     final nextElapsed = _currentElapsed();
+    var finished = false;
     setState(() {
       _elapsed = nextElapsed;
       if (_elapsed >= _duration) {
@@ -84,8 +85,23 @@ class _TimerScreenState extends State<TimerScreen>
         _countdownTimer?.cancel();
         _finishCtrl.forward(from: 0);
         _player.play(AssetSource('freiren.m4a'));
+        finished = true;
       }
     });
+    if (finished && mounted) _showAlarmDialog();
+  }
+
+  void _showAlarmDialog() {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _AlarmDialog(
+        onStop: () {
+          _player.stop();
+          Navigator.of(context).pop();
+        },
+      ),
+    );
   }
 
   void _toggleRun() {
@@ -579,4 +595,66 @@ class _Lap {
   final Duration lapTime;
   final Duration total;
   const _Lap({required this.lapTime, required this.total});
+}
+
+// ── Alarm dialog shown when timer finishes ─────────────────────────────────────
+class _AlarmDialog extends StatelessWidget {
+  final VoidCallback onStop;
+  const _AlarmDialog({required this.onStop});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: kWhite,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(28, 36, 28, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: kOrange.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.timer_outlined,
+                color: kOrange,
+                size: 36,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text("Time's Up!", style: AppTextStyles.cityHero(size: 28)),
+            const SizedBox(height: 8),
+            Text(
+              'Your timer has finished.',
+              style: AppTextStyles.cardUtc(size: 14),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            GestureDetector(
+              onTap: onStop,
+              child: Container(
+                width: double.infinity,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: kBlack,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Stop',
+                  style: AppTextStyles.cardCity(size: 16, color: kWhite),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
